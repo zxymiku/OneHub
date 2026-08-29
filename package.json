@@ -22,14 +22,15 @@
     "dev:web": "npm run dev -w frontend",
     "build:web": "npm run build -w frontend",
     "deploy": "npm run build:web && npm run deploy -w worker",
-    "account:add": "onehub-account add",
-    "account:list": "onehub-account list",
-    "account:remove": "onehub-account remove"
+    "account:add": "tsx scripts/src/cli.ts add",
+    "account:list": "tsx scripts/src/cli.ts list",
+    "account:remove": "tsx scripts/src/cli.ts remove"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.0",
     "eslint": "^9.30.0",
     "prettier": "^3.6.0",
+    "tsx": "^4.20.0",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.35.0"
   }
