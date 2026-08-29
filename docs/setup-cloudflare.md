@@ -28,13 +28,24 @@ npx wrangler secret put ACCESS_PASSWORD     # 输入你想要的访问密码
 npx wrangler secret put GATE_SECRET         # 输入一段随机长字符串(HMAC 密钥), 例: openssl rand -hex 32
 ```
 
-**网页管理台(可选)**:设置管理密码后,访问 `/admin` 即可在浏览器里添加/改名/删除 OneDrive 账号,不再需要命令行:
+**网页管理台(仅本地开发,推荐)**:账号管理不部署到线上,彻底消除公开攻击面。本地开发时:
 
 ```bash
-npx wrangler secret put ADMIN_PASSWORD      # 输入管理密码(与站点访问密码相互独立)
+# worker/.dev.vars(已 gitignore, 不会部署)写入:
+#   ADMIN_MODE=local
+#   ADMIN_PASSWORD=你的管理密码
+#   GATE_SECRET=任意随机串
+npm run dev:worker      # 本地启动后访问 http://127.0.0.1:8787/admin
 ```
 
-不设置 `ADMIN_PASSWORD` 则管理台完全关闭(`/admin` 显示"未启用",接口返回 403),没有任何额外攻击面。管理台登录同样受 5 次/10 分钟限速保护。命令行方式(`npm run account:add`)仍然可用,两者管理同一份 KV 数据。
+在本地 `/admin` 里添加/改名/删除账号(个人版设备码可视化授权、企业版表单即验即存),数据保存在本机;然后一条命令同步到线上:
+
+```bash
+npm run account:sync            # 本地账号 → 线上 KV(同 id 覆盖, 线上多出的账号保留)
+npm run account:sync -- --dry-run   # 只预览不上传
+```
+
+> 线上 Worker 没有任何账号管理接口(外部访问 `/api/admin/*` 一律 404),管理密码、设备码、凭据只出现在您的电脑与 Cloudflare 之间。需要线上紧急改动时仍可用 CLI 的 `account:add --remote` / `account:remove --remote`。
 
 本地开发则在 `worker/.dev.vars`(已 gitignore)里写:
 

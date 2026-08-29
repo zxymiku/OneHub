@@ -10,7 +10,12 @@ export interface Env {
   ACCESS_PASSWORD?: string;
   /** 门 Cookie 的 HMAC 密钥; 设置了 ACCESS_PASSWORD 时必填 */
   GATE_SECRET?: string;
-  /** 管理台密码; 未设置 = 管理台整体关闭(403 ADMIN_DISABLED) */
+  /**
+   * 管理台总开关, 只允许在本地开发设置(.dev.vars 里 ADMIN_MODE=local)。
+   * 线上部署永远不设置此变量 → /api/admin/* 对外完全不存在(404)。
+   */
+  ADMIN_MODE?: string;
+  /** 管理台登录密码; 仅 ADMIN_MODE=local 时生效 */
   ADMIN_PASSWORD?: string;
 }
 

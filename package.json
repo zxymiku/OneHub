@@ -24,7 +24,8 @@
     "deploy": "npm run build:web && npm run deploy -w worker",
     "account:add": "tsx scripts/src/cli.ts add",
     "account:list": "tsx scripts/src/cli.ts list",
-    "account:remove": "tsx scripts/src/cli.ts remove"
+    "account:remove": "tsx scripts/src/cli.ts remove",
+    "account:sync": "tsx scripts/src/cli.ts sync"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.0",

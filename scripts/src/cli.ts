@@ -1,4 +1,4 @@
-import { addCommand, listCommand, printUsage, removeCommand } from "./commands";
+import { addCommand, listCommand, printUsage, removeCommand, syncCommand } from "./commands";
 import { parseArgs } from "./lib";
 
 async function main(): Promise<void> {
@@ -17,6 +17,9 @@ async function main(): Promise<void> {
       break;
     case "remove":
       await removeCommand(flags);
+      break;
+    case "sync":
+      await syncCommand(flags);
       break;
     default:
       printUsage();

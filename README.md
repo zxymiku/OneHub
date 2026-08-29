@@ -7,7 +7,7 @@ OneHub 把您的多个 OneDrive(个人版、E3、E5、企业版混合均可)聚�
 ## 功能特性
 
 - 🔢 **多账号聚合**:任意数量 OneDrive 账号,自定义展示名,首页矩阵式进入
-- 🖥 **网页管理台**:浏览器 `/admin` 页添加/改名/删除账号(个人版设备码可视化授权、企业版表单即验即存),独立管理密码保护,默认关闭
+- 🖥 **本地网页管理台**:本地开发时浏览器 `/admin` 页添加/改名/删除账号(个人版设备码可视化授权、企业版表单即验即存),`account:sync` 一键同步线上;**线上不存在任何管理接口**,零公开攻击面
 - 📁 **在线浏览**:目录树导航、面包屑、文件名/大小/时间展示
 - 🔗 **直链下载**:直接推送 OneDrive 预授权临时链接(约 1 小时有效),流量不经过服务器
 - 👁 **在线预览**:docx / xlsx / pptx(微软官方渲染)、txt / markdown / 代码文本、pdf、图片、mp4 等视频、音频;不支持的类型明确提示"此文件类型不支持在线预览,请下载后查看"
@@ -64,18 +64,22 @@ npx wrangler secret put GATE_SECRET       # 输入随机长串: openssl rand -he
 
 ### 第 4 步:添加您的 OneDrive 账号
 
-**方式 A:网页管理台(推荐,无需命令行)**
+**方式 A:本地网页管理台(推荐,全程点点点,线上零管理接口)**
+
+账号管理只在您的电脑上进行,线上网站不存在任何管理接口(外部访问一律 404),这是隐私最稳妥的方式:
 
 ```bash
-npx wrangler secret put ADMIN_PASSWORD      # 设置管理密码(一次性)
-npm run build:web && npm run deploy
+# 1) 本地启用管理台: 在 worker/.dev.vars(已 gitignore)写入三行:
+#    ADMIN_MODE=local
+#    ADMIN_PASSWORD=你的管理密码
+#    GATE_SECRET=任意随机串
+npm run dev:worker        # 2) 启动本地服务(只绑定本机 127.0.0.1)
+# 3) 浏览器打开 http://127.0.0.1:8787/admin:
+#    + 个人版 → 页面显示设备码 → 微软页面输入并登录 → 自动入库
+#    + 企业版 → 表单填写, 服务端即时验证, 通过才写入
+npm run account:sync      # 4) 把本地账号上传到线上 KV(经 Cloudflare 认证连接加密传输)
+npm run deploy            # 5) 首次部署(之后改账号只需重复 3-4)
 ```
-
-部署后打开 `https://<部署域名>/admin`,输入管理密码即可:
-
-- **+ 个人版**:填展示名和应用 ID → 页面显示设备码 → 按提示在微软页面输入并登录 → 页面自动等待并完成添加;
-- **+ 企业版**:表单填入租户 ID / 应用 ID / 密钥 / UPN → 服务端即时验证,通过才写入;
-- 随时**改名 / 删除**,与首页展示即时同步。
 
 **方式 B:命令行 CLI**
 
@@ -88,10 +92,11 @@ npm run account:add -- --name 账号2 --type business \
   --client-id <应用程序ID> --tenant-id <租户ID> \
   --client-secret <密钥Value> --upn admin@xxxx.onmicrosoft.com
 
-npm run account:list      # 检查;注意加 --remote 写入线上 KV(见脚本帮助)
+npm run account:add -- --remote ...   # 任何命令加 --remote 直接写线上 KV
+npm run account:list                  # 检查
 ```
 
-两种方式管理同一份云端数据,可混用。`--name` 就是首页展示的名字,随意取("一号机"、"账号2"、家庭云盘…)。
+两种方式管理同一套数据模型,可混用。`--name` 就是首页展示的名字,随意取("一号机"、"账号2"、家庭云盘…)。
 
 ### 第 5 步:部署上线
 
@@ -139,8 +144,13 @@ docx/xlsx/pptx(微软渲染)、txt/markdown/代码文本、pdf、常见图片、
 </details>
 
 <details>
-<summary><b>忘记管理密码 / 想关闭管理台?</b></summary>
-<code>npx wrangler secret put ADMIN_PASSWORD</code> 覆盖为新值;要彻底关闭则删除:<code>npx wrangler secret delete ADMIN_PASSWORD</code> 后重新部署。管理密码与站点访问密码相互独立。
+<summary><b>管理台/账号数据安全吗?</b></summary>
+线上 Worker 没有任何账号管理接口(外部访问 <code>/api/admin/*</code> 一律 404)——没有管理密码可暴破、没有管理 Cookie 可窃取。账号管理只发生在您本机(wrangler dev 仅绑定 127.0.0.1),凭据经 Cloudflare 认证连接加密写入 KV,访客与公网均无法接触。
+</details>
+
+<details>
+<summary><b>忘记本地管理密码?</b></summary>
+直接改 worker/.dev.vars 里的 ADMIN_PASSWORD,重启 dev:worker 即可(仅存本机,不影响线上)。
 </details>
 
 <details>
