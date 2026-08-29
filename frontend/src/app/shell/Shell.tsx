@@ -3,10 +3,11 @@ import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import s from "./Shell.module.css";
 import { useGate } from "../../shared/gate/GateContext";
+import { apiDelete } from "../../shared/api/client";
 
 /** 全局应用壳: 竖排浅色 rail + 顶栏 + 舞台 + 底部炭黑仪表 dock(endfield 壳层语法) */
 export function Shell({ children }: { children: ReactNode }) {
-  const { status: gate, error: gateError } = useGate();
+  const { status: gate, error: gateError, refresh } = useGate();
   const [online, setOnline] = useState<boolean | null>(null);
   const location = useLocation();
 
@@ -25,6 +26,14 @@ export function Shell({ children }: { children: ReactNode }) {
   }, [location.pathname]);
 
   const viewLabel = location.pathname === "/" ? "HUB / 账号矩阵" : `LINK ${location.pathname}`;
+
+  async function lockAgain() {
+    try {
+      await apiDelete("/api/gate/verify");
+    } finally {
+      refresh();
+    }
+  }
 
   return (
     <div className={s.shell}>
@@ -49,9 +58,13 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className={`ark-micro ${s.topbarView}`}>{viewLabel}</span>
           <span className={s.topbarRight}>
             {gate?.required ? (
-              <span className={`ark-micro ${gate.unlocked ? s.chipState : s.chipWarn}`}>
-                {gate.unlocked ? "已解锁" : "已锁定"}
-              </span>
+              gate.unlocked ? (
+                <button type="button" className={`ark-micro ${s.chipState}`} onClick={() => void lockAgain()} title="重新锁定站点">
+                  已解锁 · 点击锁定
+                </button>
+              ) : (
+                <span className={`ark-micro ${s.chipWarn}`}>已锁定</span>
+              )
             ) : null}
             {gateError ? <span className={`ark-micro ${s.chipWarn}`}>离线</span> : null}
           </span>
