@@ -5,6 +5,10 @@ export default tseslint.config(
   {
     ignores: ["**/dist/**", "**/node_modules/**", ".skills/**", ".wrangler/**"],
   },
+  {
+    files: ["**/*.mjs"],
+    languageOptions: { globals: { process: "readonly", console: "readonly" } },
+  },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {

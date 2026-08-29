@@ -1,0 +1,31 @@
+// OneHub Worker 配置模板(仓库中唯一入库的配置源)
+//
+// 本文件含占位符,不含任何真实账户标识符 —— 仓库可安全开源。
+// 真实 wrangler.jsonc 由 `node worker/gen-wrangler.mjs` 生成(不入库),
+// KV namespace ID 注入来源(优先级从高到低):
+//   1. 环境变量  CF_KV_ACCOUNTS_ID / CF_KV_GATE_ID
+//   2. worker/.dev.vars 中同名键(本地开发)
+//   3. 都没有 → 占位符:仅可本地 wrangler dev 模拟,部署/远程 KV 会失败
+//
+// 创建 KV: npx wrangler kv namespace create ACCOUNTS / GATE
+{
+  "name": "onehub",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "../frontend/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "kv_namespaces": [
+    { "binding": "ACCOUNTS", "id": "<KV_NAMESPACE_ID>" },
+    { "binding": "GATE", "id": "<KV_NAMESPACE_ID_2>" }
+  ],
+  "vars": {
+    "ACCESS_PASSWORD": ""
+  },
+  "observability": {
+    "enabled": true
+  }
+}

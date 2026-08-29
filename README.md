@@ -54,9 +54,18 @@ npm install
 
 ```bash
 npx wrangler login                        # 浏览器授权登录
-npx wrangler kv namespace create ACCOUNTS # 输出的 id 填入 worker/wrangler.jsonc
-npx wrangler kv namespace create GATE     # 同上(第二个占位符)
+npx wrangler kv namespace create ACCOUNTS # 记下输出的 id
+npx wrangler kv namespace create GATE     # 记下输出的 id
+```
 
+**开源安全设计:仓库不含真实 id**。把两个 id 写入本地 `worker/.dev.vars`(已 gitignore):
+
+```
+CF_KV_ACCOUNTS_ID=<第一个 id>
+CF_KV_GATE_ID=<第二个 id>
+```
+
+```bash
 # 可选但强烈建议:站点访问密码(不设则完全公开)
 npx wrangler secret put ACCESS_PASSWORD   # 输入访问密码
 npx wrangler secret put GATE_SECRET       # 输入随机长串: openssl rand -hex 32
@@ -114,6 +123,7 @@ npm run deploy            # 得到 https://onehub.<你的子域>.workers.dev
 - 凭据(clientSecret / refreshToken)只存 **Cloudflare KV(静态加密)**,前端与仓库**永不接触**;access_token 缓存约 55 分钟自动过期。
 - 下载直链是 Graph 预授权临时链接(≈1 小时失效);访客可见展示名与文件元数据,但**看不到您的邮箱/UPN/任何密钥**。
 - 可选站点密码:HMAC 签名 HttpOnly Cookie + 按 IP 限速防暴破。
+- **仓库可安全开源**:配置由模板生成,KV id 等账户标识符只在部署时注入(环境变量/CI Secrets),仓库与 git 历史新增内容均不含任何标识符与凭据;开源前的一次性历史检查见 [docs/安全.md](docs/安全.md)。
 - 企业版直链主机名会含租户名(如 `contoso-my.sharepoint.com`),属已知限制,详见 **[docs/安全.md](docs/安全.md)**(含您应做的定期维护项)。
 
 ## 常见问题

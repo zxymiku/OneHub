@@ -17,7 +17,14 @@ npx wrangler kv namespace create ACCOUNTS   # 账号注册表(含凭据)
 npx wrangler kv namespace create GATE       # 密码门限速计数
 ```
 
-把命令输出的 `id` 填入 `worker/wrangler.jsonc` 对应的 `<KV_NAMESPACE_ID>` / `<KV_NAMESPACE_ID_2>` 占位符。
+记下两个命令输出的 `id`。**开源安全设计:仓库里不含真实 id** —— 配置文件 `worker/wrangler.jsonc` 由 `wrangler.template.jsonc` 生成,注入来源:
+
+- **本地**(dev / 本地 KV 操作 / account:sync):写入 `worker/.dev.vars`(已 gitignore):
+  ```
+  CF_KV_ACCOUNTS_ID=<第一个 id>
+  CF_KV_GATE_ID=<第二个 id>
+  ```
+- **线上部署**:填入 GitHub Secrets 或 Workers Builds 构建变量,同名 `CF_KV_ACCOUNTS_ID` / `CF_KV_GATE_ID`(见 §6.1)。
 
 ## 3. 配置访问密码(可选,但强烈建议)
 
@@ -97,13 +104,14 @@ npm run deploy        # wrangler deploy, 输出形如 https://onehub.<你的子�
 1. 生成 Cloudflare API Token:Dashboard → 右上角头像 → **My Profile → API Tokens → Create Token** → 使用模板 **"Edit Cloudflare Workers"** → Create 并复制(只显示一次);
    - 若部署时报 KV 权限错误,编辑该 Token 追加 **Account → Workers KV Storage → Edit**;
 2. 复制 **Account ID**:Dashboard → Workers & Pages 概览页右侧栏;
-3. GitHub 仓库 → **Settings → Secrets and variables → Actions → New repository secret** 分别添加:
+3. GitHub 仓库 → **Settings → Secrets and variables → Actions → New repository secret** 添加四个:
    - `CLOUDFLARE_API_TOKEN` = 第 1 步的 Token
    - `CLOUDFLARE_ACCOUNT_ID` = 第 2 步的 ID
+   - `CF_KV_ACCOUNTS_ID` / `CF_KV_GATE_ID` = §2 创建的两个 KV namespace id
 
 之后每次 PR 合并进 main,GitHub Actions 会自动构建 + 部署(Action 日志可见部署后的 workers.dev 地址)。也可以在 Actions 页面手动 **Run workflow** 触发。
 
-**备选方案(Cloudflare 原生 Git 集成,免 Token)**:Dashboard → Workers & Pages → onehub → **Settings → Build → Connect**(Workers Builds),绑定本仓库与 main 分支,构建命令填 `npm ci && npm run build:web`,部署命令 `npx wrangler deploy`。两种方式二选一即可,避免同时启用造成重复部署。
+**备选方案(Cloudflare 原生 Git 集成,免 Token)**:Dashboard → Workers & Pages → onehub → **Settings → Build → Connect**(Workers Builds),绑定本仓库与 main 分支,构建命令填 `npm ci && npm run build:web && node worker/gen-wrangler.mjs`,部署命令 `npx wrangler deploy -c worker/wrangler.jsonc`;并在构建设置的 **Variables** 里添加 `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`CF_KV_ACCOUNTS_ID`、`CF_KV_GATE_ID` 四个变量。两种方式二选一即可,避免同时启用造成重复部署。
 
 ## 7. 验证清单
 

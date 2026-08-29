@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,7 +11,18 @@ function wranglerBin(): string {
   return path.resolve(workerDir, "..", "node_modules", "wrangler", "bin", "wrangler.js");
 }
 
+/** wrangler.jsonc 是生成物: 缺失时按 CF_KV_* 环境变量/.dev.vars 生成(开源零标识符链路) */
+function ensureWranglerConfig(): void {
+  if (!existsSync(path.join(workerDir, "wrangler.jsonc"))) {
+    execFileSync(process.execPath, [path.join(workerDir, "gen-wrangler.mjs")], {
+      cwd: workerDir,
+      stdio: "inherit",
+    });
+  }
+}
+
 function runWrangler(args: string[], allowFailure: boolean): string | null {
+  ensureWranglerConfig();
   try {
     return execFileSync(process.execPath, [wranglerBin(), ...args], {
       cwd: workerDir,

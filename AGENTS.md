@@ -5,7 +5,7 @@
 ## 0. 铁律(违反即要求返工)
 
 1. **禁止直接提交任何内容到 `main` 分支**(包括文档)。一切变更走功能分支 + Pull Request,由仓库所有者人工审查合并。
-2. **禁止提交任何密钥/令牌/密码**:clientSecret、refreshToken、ACCESS_PASSWORD、GATE_SECRET、KV 内容、`.dev.vars`、`.env*` 一律不入库。样例只允许占位符(`<your-client-id>`)。
+2. **禁止提交任何密钥/令牌/密码**:clientSecret、refreshToken、ACCESS_PASSWORD、GATE_SECRET、KV 内容、`.dev.vars`、`.env*` 一律不入库。样例只允许占位符(`<your-client-id>`)。**`worker/wrangler.jsonc` 是生成物不入库**(由 `wrangler.template.jsonc` + `CF_KV_*` 环境变量生成, 开源零标识符);改 Worker 配置请改模板。
 3. **禁止把 `.skills/`、`.wrangler/`、`node_modules/`、`dist/` 提交进仓库**(已在 .gitignore)。
 4. **禁止在前端代码或响应中暴露凭据**;所有 Graph 调用必须经 Worker 代理。
 5. 视觉契约 `endfield × maximal` 不可擅改;**不得复制任何鹰角(Hypergryph)版权资产**(logo、立绘、截图、CDN 资源),只依据 `.skills/ark-ui-skill-main` 做风格重建。
