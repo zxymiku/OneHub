@@ -4,6 +4,7 @@ import type { ItemDTO, SafeAccount } from "../../shared/api/types";
 import { apiGet } from "../../shared/api/client";
 import { useItems } from "../../shared/api/useItems";
 import { extensionOf, formatDate, formatSize, splitPath } from "../../shared/format";
+import { PreviewPanel } from "../preview/PreviewPanel";
 import s from "./BrowsePage.module.css";
 
 type SortKey = "name" | "size" | "date";
@@ -39,6 +40,7 @@ export function BrowsePage() {
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortAsc, setSortAsc] = useState(true);
   const [filter, setFilter] = useState("");
+  const [previewItem, setPreviewItem] = useState<ItemDTO | null>(null);
 
   const visible = useMemo(() => {
     const list = (items ?? []).filter((item) => item.name.toLowerCase().includes(filter.toLowerCase()));
@@ -184,13 +186,18 @@ export function BrowsePage() {
                       <span className={s.nameText}>{item.name}</span>
                     </button>
                   ) : (
-                    <a className={s.name} href={downloadHref(item)} title={`下载 ${item.name}`}>
+                    <button
+                      type="button"
+                      className={s.name}
+                      onClick={() => setPreviewItem(item)}
+                      title={`预览 ${item.name}`}
+                    >
                       <span className={s.marker} data-kind="file" aria-hidden="true" />
                       <span className={s.nameText}>{item.name}</span>
                       {extensionOf(item.name) ? (
                         <span className={`ark-micro ${s.ext}`}>{extensionOf(item.name)}</span>
                       ) : null}
-                    </a>
+                    </button>
                   )}
                   <span className={`ark-readout ${s.size}`}>{formatSize(item.size)}</span>
                   <span className={`ark-readout ${s.date}`}>{formatDate(item.lastModifiedDateTime)}</span>
@@ -212,6 +219,10 @@ export function BrowsePage() {
           </ul>
         </div>
       )}
+
+      {previewItem ? (
+        <PreviewPanel accountId={accountId} item={previewItem} onClose={() => setPreviewItem(null)} />
+      ) : null}
     </div>
   );
 }
