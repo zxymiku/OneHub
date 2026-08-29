@@ -128,7 +128,7 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | PR-3 | `feat/account-cli` | `scripts/` | 账号管理 CLI:add(个人版设备码流/企业版密钥验证并解析 driveId)、list、remove,经 wrangler 写 KV | docs/api.md §KV | 已提PR #3 |
 | PR-4 | `feat/frontend-shell` | `frontend/` | Vite+React 脚手架、ark-ui endfield/maximal token 体系、应用壳(rail/dock/舞台分层)、首页账号矩阵、gate 状态检测跳转 | docs/api.md、§5 | 已提PR #4 |
 | PR-5 | `feat/browse` | `frontend/src/features/browse` | 目录浏览:面包屑、列表(排序/搜索)、加载/错误/空态、状态仪表 | PR-4 | 已提PR #5 |
-| PR-6 | `feat/preview` | `frontend/src/features/preview` | 预览矩阵全量实现 + fileTypes 单测 + 不支持提示 + 下载按钮 | PR-5 | 待认领 |
+| PR-6 | `feat/preview` | `frontend/src/features/preview` | 预览矩阵全量实现 + fileTypes 单测 + 不支持提示 + 下载按钮 | PR-5 | 已提PR #6 |
 | PR-7 | `feat/gate` | `frontend/src/features/gate` | 密码门 UI + verify 流程 + 失败限速提示 | PR-4(worker 端点已在 PR-2) | 待认领 |
 | PR-8 | `chore/release` | 各处小改 | CI 完善、wrangler 部署核对、端到端走查清单(桌面+竖屏) | 全部 | 待认领 |
 

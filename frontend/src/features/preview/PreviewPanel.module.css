@@ -1,0 +1,257 @@
+/* 预览面板: 全屏遮罩 + 工程面板 */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(25, 25, 25, 0.62);
+  display: grid;
+  place-items: center;
+  padding: clamp(8px, 2vw, 28px);
+}
+
+.panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  width: min(1100px, 100%);
+  height: min(86dvh, 100%);
+  background: var(--ark-paper);
+  border: 1px solid var(--ark-line);
+  box-shadow: var(--ark-depth-shadow-signal);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ark-line);
+  background: var(--ark-panel);
+  min-width: 0;
+}
+
+.marker {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: var(--ark-signal);
+  border: 1px solid var(--ark-ink);
+}
+
+.headText {
+  min-width: 0;
+  display: grid;
+  gap: 0;
+}
+
+.name {
+  font-weight: 700;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.headAction {
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 12px;
+  border: 1px solid var(--ark-line);
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--ark-paper);
+}
+
+.headAction:hover {
+  background: var(--ark-signal);
+}
+
+.close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--ark-line);
+  background: var(--ark-ink);
+  color: var(--ark-on-ink);
+  font-size: 15px;
+}
+
+.close:hover {
+  color: var(--ark-signal);
+}
+
+.body {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+}
+
+.frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: var(--ark-panel);
+}
+
+.center {
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.image {
+  max-width: 100%;
+  max-height: 100%;
+  border: 1px solid var(--ark-line);
+  background: white;
+}
+
+.media {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--ark-ink);
+}
+
+.audio {
+  width: min(560px, 100%);
+}
+
+.text {
+  margin: 0;
+  padding: 18px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* markdown 排版(消毒后 HTML) */
+.markdown {
+  padding: clamp(16px, 3vw, 32px);
+  max-width: 76em;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  line-height: 1;
+  margin: 1.4em 0 0.5em;
+}
+
+.markdown h1 {
+  font-size: 1.9em;
+}
+
+.markdown h2 {
+  font-size: 1.5em;
+}
+
+.markdown p,
+.markdown ul,
+.markdown ol {
+  margin: 0.6em 0;
+}
+
+.markdown ul,
+.markdown ol {
+  padding-left: 1.4em;
+}
+
+.markdown code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--ark-panel-dim);
+  padding: 1px 5px;
+}
+
+.markdown pre {
+  background: var(--ark-panel-dim);
+  border: 1px solid var(--ark-line-soft);
+  padding: 14px;
+  overflow: auto;
+}
+
+.markdown pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown blockquote {
+  border-left: 3px solid var(--ark-ink);
+  margin: 0.8em 0;
+  padding: 0.2em 0 0.2em 1em;
+  color: var(--ark-ink-soft);
+}
+
+.markdown table {
+  border-collapse: collapse;
+  margin: 0.8em 0;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--ark-line-soft);
+  padding: 6px 10px;
+}
+
+.markdown img {
+  max-width: 100%;
+}
+
+.officeWrap {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
+}
+
+.officeNote {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--ark-line-soft);
+}
+
+.fallback {
+  place-self: center;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  padding: 30px;
+  text-align: center;
+}
+
+.fallbackTitle {
+  font-weight: 700;
+  font-size: 17px;
+  max-width: 26em;
+}
+
+.fallbackAction {
+  min-height: var(--ark-tap-min);
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 26px;
+  background: var(--ark-signal);
+  border: 1px solid var(--ark-ink);
+  font-weight: 700;
+}
+
+.fallbackAction:hover {
+  box-shadow: 3px 3px 0 var(--ark-ink);
+  transform: translate(-1px, -1px);
+}
+
+@media (max-width: 760px), (orientation: portrait) {
+  .overlay {
+    padding: 0;
+  }
+
+  .panel {
+    width: 100%;
+    height: 100dvh;
+    border: none;
+  }
+}
