@@ -41,54 +41,14 @@ export function AccountsPage() {
 
   return (
     <div>
-      {/* ---- HERO: 签名构图(转子舞台 + 超大标题 + 状态读出) ---- */}
-      <section className={s.hero}>
-        <div className={s.heroCopy}>
-          <p className={`ark-micro ${s.heroEyebrow}`}>ONEHUB FIELD SYSTEM · 多盘聚合入口</p>
-          <h1 className={s.heroTitle}>
-            你的多个
-            <br />
-            OneDrive
-            <span className={s.heroTitleMark}>→</span>
-            一个入口
-          </h1>
-          <p className={s.heroLead}>
-            选择一个网盘进入浏览。文件可直接获取 OneDrive 下载直链, 常见文档 / 视频 / 音频支持在线预览。
-          </p>
-          <dl className={s.heroReadout}>
-            <div className={s.readoutCell}>
-              <dt className="ark-micro">接入账号</dt>
-              <dd className={`ark-readout ${s.readoutValue}`}>{String(count).padStart(2, "0")}</dd>
-            </div>
-            <div className={s.readoutCell}>
-              <dt className="ark-micro">下载方式</dt>
-              <dd className={`ark-readout ${s.readoutValue}`}>直链 302</dd>
-            </div>
-            <div className={s.readoutCell}>
-              <dt className="ark-micro">凭据暴露</dt>
-              <dd className={`ark-readout ${s.readoutValue}`}>00</dd>
-            </div>
-          </dl>
-        </div>
-
-        {/* 签名视觉: 纯 CSS 转子舞台(不复制任何版权资产) */}
-        <div className={s.rotor} aria-hidden="true">
-          <span className={s.rotorRing} />
-          <span className={s.rotorRingInner} />
-          <span className={s.rotorSweep} />
-          <span className={s.rotorCross} />
-          <span className={s.rotorTag}>LINK-01</span>
-        </div>
-      </section>
-
-      {/* ---- 账号矩阵 ---- */}
+      {/* ---- 账号矩阵(首页主体, 不放口号文案) ---- */}
       <section className={s.matrix} aria-label="网盘账号">
         <header className={s.matrixHead}>
           <span className={s.matrixIndex} aria-hidden="true">
             01
           </span>
-          <h2 className={s.matrixTitle}>选择网盘</h2>
-          <span className="ark-micro">TAP TO LINK</span>
+          <h1 className={s.matrixTitle}>选择网盘</h1>
+          <span className={`ark-readout ${s.matrixCount}`}>{String(count).padStart(2, "0")} 个</span>
         </header>
 
         {loading ? (
@@ -107,9 +67,7 @@ export function AccountsPage() {
         ) : count === 0 ? (
           <div className={s.notice}>
             <p className={s.noticeTitle}>还没有接入任何网盘账号</p>
-            <p className="ark-micro">
-              部署者可在服务器上执行 npm run account:add 添加账号, 步骤见 README
-            </p>
+            <p className="ark-micro">账号由部署者在本地管理台添加, 同步后即可显示</p>
           </div>
         ) : (
           <ul className={s.grid}>

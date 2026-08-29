@@ -1,145 +1,14 @@
-/* 首页: hero 签名构图 + 账号矩阵 */
+/* 首页: 账号矩阵为主, 页头仅一行(编号 + 标题 + 计数) */
 
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: clamp(20px, 4vw, 56px);
-  align-items: end;
-  padding-bottom: clamp(24px, 4vw, 48px);
-  border-bottom: 1px solid var(--ark-line);
-  margin-bottom: clamp(24px, 4vw, 48px);
-}
-
-.heroEyebrow {
-  display: inline-block;
-  background: var(--ark-ink);
-  color: var(--ark-on-ink);
-  padding: 4px 10px;
-  margin-bottom: 18px;
-}
-
-.heroTitle {
-  font-size: clamp(40px, 7.5vw, 96px);
-  line-height: 0.88;
-  letter-spacing: -0.02em;
-}
-
-.heroTitleMark {
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--ark-ink);
-  margin: 0 0.12em;
-}
-
-.heroLead {
-  max-width: 34em;
-  margin-top: 16px;
-  color: var(--ark-ink-soft);
-}
-
-.heroReadout {
-  display: flex;
-  gap: clamp(16px, 3vw, 40px);
-  margin-top: 26px;
-  padding-top: 14px;
-  border-top: 1px solid var(--ark-line);
-}
-
-.readoutCell dt {
-  margin: 0;
-}
-
-.readoutValue {
-  margin: 2px 0 0;
-  font-size: clamp(20px, 2.6vw, 30px);
-  font-weight: 700;
-}
-
-/* ---- 转子舞台: 4 层(环/内环/扫掠/十字), 仅 CSS 绘制 ---- */
-
-.rotor {
-  position: relative;
-  aspect-ratio: 1;
-  max-width: 420px;
-  justify-self: end;
-  width: 100%;
-}
-
-.rotorRing,
-.rotorRingInner {
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--ark-line);
-  border-radius: 50%;
-}
-
-.rotorRing::after {
-  content: "";
-  position: absolute;
-  inset: 14%;
-  border: 1px dashed var(--ark-ink-faint);
-  border-radius: 50%;
-}
-
-.rotorRingInner {
-  inset: 30%;
-  background: var(--ark-signal);
-  opacity: var(--ark-depth-art-opacity);
-  mix-blend-mode: multiply;
-}
-
-.rotorSweep {
-  position: absolute;
-  inset: 4%;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    rgba(25, 25, 25, 0.28) 0deg,
-    rgba(25, 25, 25, 0.02) 60deg,
-    transparent 90deg,
-    transparent 360deg
-  );
-  animation: rotor-spin 14s linear infinite;
-}
-
-.rotorCross {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(to right, transparent calc(50% - 0.5px), var(--ark-line) calc(50% - 0.5px), var(--ark-line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(to bottom, transparent calc(50% - 0.5px), var(--ark-line) calc(50% - 0.5px), var(--ark-line) calc(50% + 0.5px), transparent calc(50% + 0.5px));
-}
-
-.rotorTag {
-  position: absolute;
-  right: 4%;
-  bottom: 8%;
-  background: var(--ark-ink);
-  color: var(--ark-on-ink);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  padding: 3px 8px;
-}
-
-@keyframes rotor-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rotorSweep {
-    animation: none;
-    background: conic-gradient(from 45deg, rgba(25, 25, 25, 0.2) 0 30deg, transparent 30deg);
-  }
-}
-
-/* ---- 账号矩阵 ---- */
+/* ---- 页头 ---- */
 
 .matrixHead {
   display: flex;
   align-items: baseline;
   gap: 14px;
   margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ark-line);
 }
 
 .matrixIndex {
@@ -151,12 +20,20 @@
 }
 
 .matrixTitle {
-  font-size: clamp(22px, 3vw, 32px);
+  font-size: clamp(24px, 3.4vw, 38px);
 }
 
-.matrixHead .ark-micro {
+.matrixCount {
   margin-left: auto;
+  padding: 2px 10px;
+  border: 1px solid var(--ark-line);
+  background: var(--ark-panel);
+  font-size: clamp(14px, 1.6vw, 18px);
+  font-weight: 700;
+  white-space: nowrap;
 }
+
+/* ---- 账号矩阵 ---- */
 
 .grid {
   list-style: none;
@@ -278,15 +155,15 @@
   transform: translate(-1px, -1px);
 }
 
-/* ---- 响应式重导演 ---- */
+/* ---- 响应式: 窄屏计数换行到标题下方 ---- */
 
-@media (max-width: 860px), (orientation: portrait) {
-  .hero {
-    grid-template-columns: 1fr;
-    align-items: start;
+@media (max-width: 480px) {
+  .matrixHead {
+    flex-wrap: wrap;
+    row-gap: 4px;
   }
 
-  .rotor {
-    display: none;
+  .matrixCount {
+    margin-left: 0;
   }
 }
