@@ -24,7 +24,7 @@ npx wrangler kv namespace create GATE       # 密码门限速计数
   CF_KV_ACCOUNTS_ID=<第一个 id>
   CF_KV_GATE_ID=<第二个 id>
   ```
-- **线上部署**:填入 GitHub Secrets 或 Workers Builds 构建变量,同名 `CF_KV_ACCOUNTS_ID` / `CF_KV_GATE_ID`(见 §6.1)。
+- **线上部署**:填入 GitHub Secrets 或 Workers Builds 构建变量,同名 `CF_KV_ACCOUNTS_ID` / `CF_KV_GATE_ID`(见 §6.1 / §6.2)。
 
 ## 3. 配置访问密码(可选,但强烈建议)
 
@@ -35,13 +35,15 @@ npx wrangler secret put ACCESS_PASSWORD     # 输入你想要的访问密码
 npx wrangler secret put GATE_SECRET         # 输入一段随机长字符串(HMAC 密钥), 例: openssl rand -hex 32
 ```
 
-**网页管理台(仅本地开发,推荐)**:账号管理不部署到线上,彻底消除公开攻击面。本地开发时:
+**网页管理台(仅本地开发,推荐)**:账号管理不部署到线上,彻底消除公开攻击面。在 `worker/.dev.vars`(已 gitignore, 不会部署)**追加**三行:
+
+```
+ADMIN_MODE=local
+ADMIN_PASSWORD=你的管理密码
+GATE_SECRET=任意随机串
+```
 
 ```bash
-# worker/.dev.vars(已 gitignore, 不会部署)写入:
-#   ADMIN_MODE=local
-#   ADMIN_PASSWORD=你的管理密码
-#   GATE_SECRET=任意随机串
 npm run dev:worker      # 本地启动后访问 http://127.0.0.1:8787/admin
 ```
 
@@ -54,16 +56,22 @@ npm run account:sync -- --dry-run   # 只预览不上传
 
 > 线上 Worker 没有任何账号管理接口(外部访问 `/api/admin/*` 一律 404),管理密码、设备码、凭据只出现在您的电脑与 Cloudflare 之间。需要线上紧急改动时仍可用 CLI 的 `account:add --remote` / `account:remove --remote`。
 
-本地开发则在 `worker/.dev.vars`(已 gitignore)里写:
+<details>
+<summary><b>worker/.dev.vars 本地完整示例(各键汇总)</b></summary>
 
 ```
-ACCESS_PASSWORD=dev123
-GATE_SECRET=dev-secret-change-me
+CF_KV_ACCOUNTS_ID=<§2 的 ACCOUNTS id>     # 生成 wrangler.jsonc 用
+CF_KV_GATE_ID=<§2 的 GATE id>
+ACCESS_PASSWORD=dev123                    # 可选, 本地测密码门
+GATE_SECRET=dev-secret-change-me          # 密码门/管理台 Cookie 签名
+ADMIN_MODE=local                          # 启用本地管理台
+ADMIN_PASSWORD=你的管理密码
 ```
+</details>
 
 ## 4. 添加 OneDrive 账号
 
-先完成 `docs/setup-azure.md` 的应用注册,然后:
+推荐用 §3 的本地网页管理台(全程点点点);本节是**等价的命令行方式**。两者都需先完成 `docs/setup-azure.md` 的应用注册:
 
 ```bash
 # 个人版(会给出设备码, 浏览器打开 microsoft.com/devicelogin 输入并登录)
