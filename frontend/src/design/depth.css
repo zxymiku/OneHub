@@ -1,0 +1,36 @@
+/*
+ * 深度轴 CSS 变量(家族与深度分离, 契约 depth=maximal)。
+ * 深度衡量编排度而非内容密度: 图层透明度/偏移阴影/揭示时长按档位变化。
+ * 内容密集屏(文件列表)允许降 complex 密度 — 通过容器级 [data-density] 局部降档实现。
+ */
+:root {
+  --ark-depth-grid-opacity: 0.35;
+  --ark-depth-art-opacity: 0.5;
+  --ark-depth-shadow-signal: 4px 4px 0 rgba(25, 25, 25, 0.85);
+  --ark-depth-shadow-panel: 4px 4px 0 rgba(25, 25, 25, 0.14);
+  --ark-depth-reveal: 480ms;
+  --ark-depth-rule: 1;
+}
+
+[data-ark-depth="complex"] {
+  --ark-depth-grid-opacity: 0.6;
+  --ark-depth-art-opacity: 0.75;
+  --ark-depth-shadow-signal: 6px 6px 0 rgba(25, 25, 25, 0.85);
+  --ark-depth-shadow-panel: 6px 6px 0 rgba(25, 25, 25, 0.16);
+  --ark-depth-reveal: 620ms;
+}
+
+[data-ark-depth="maximal"] {
+  --ark-depth-grid-opacity: 1;
+  --ark-depth-art-opacity: 1;
+  --ark-depth-shadow-signal: 9px 9px 0 rgba(25, 25, 25, 0.85);
+  --ark-depth-shadow-panel: 9px 9px 0 rgba(25, 25, 25, 0.18);
+  --ark-depth-reveal: 780ms;
+}
+
+/* 尊重系统减少动态偏好: 揭示动画退化为瞬时, 循环动效由各组件媒体查询关闭 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ark-depth-reveal: 1ms;
+  }
+}

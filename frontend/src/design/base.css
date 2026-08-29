@@ -1,0 +1,123 @@
+/* 基础层: reset / 排版 / 焦点 / 文本工具类 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--ark-paper);
+  color: var(--ark-ink);
+  font-family: var(--ark-font);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--ark-signal);
+  color: var(--ark-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ark-ink);
+  outline-offset: 2px;
+}
+
+/* micro-label: 小型技术标注 */
+.ark-micro {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ark-ink-soft);
+}
+
+/* 数字读出 */
+.ark-readout {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* 区块揭示: 编排入场, 时长由深度档位决定 */
+.ark-reveal {
+  animation: ark-reveal-in var(--ark-depth-reveal) cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+
+@keyframes ark-reveal-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ark-reveal {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* 跳转主内容(skiplink) */
+.ark-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--ark-signal);
+  color: var(--ark-ink);
+  padding: 8px 16px;
+  font-weight: 700;
+  z-index: 99;
+}
+
+.ark-skip-link:focus-visible {
+  left: 0;
+}

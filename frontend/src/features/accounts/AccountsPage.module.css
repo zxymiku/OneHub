@@ -1,0 +1,292 @@
+/* 首页: hero 签名构图 + 账号矩阵 */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(20px, 4vw, 56px);
+  align-items: end;
+  padding-bottom: clamp(24px, 4vw, 48px);
+  border-bottom: 1px solid var(--ark-line);
+  margin-bottom: clamp(24px, 4vw, 48px);
+}
+
+.heroEyebrow {
+  display: inline-block;
+  background: var(--ark-ink);
+  color: var(--ark-on-ink);
+  padding: 4px 10px;
+  margin-bottom: 18px;
+}
+
+.heroTitle {
+  font-size: clamp(40px, 7.5vw, 96px);
+  line-height: 0.88;
+  letter-spacing: -0.02em;
+}
+
+.heroTitleMark {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--ark-ink);
+  margin: 0 0.12em;
+}
+
+.heroLead {
+  max-width: 34em;
+  margin-top: 16px;
+  color: var(--ark-ink-soft);
+}
+
+.heroReadout {
+  display: flex;
+  gap: clamp(16px, 3vw, 40px);
+  margin-top: 26px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ark-line);
+}
+
+.readoutCell dt {
+  margin: 0;
+}
+
+.readoutValue {
+  margin: 2px 0 0;
+  font-size: clamp(20px, 2.6vw, 30px);
+  font-weight: 700;
+}
+
+/* ---- 转子舞台: 4 层(环/内环/扫掠/十字), 仅 CSS 绘制 ---- */
+
+.rotor {
+  position: relative;
+  aspect-ratio: 1;
+  max-width: 420px;
+  justify-self: end;
+  width: 100%;
+}
+
+.rotorRing,
+.rotorRingInner {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--ark-line);
+  border-radius: 50%;
+}
+
+.rotorRing::after {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border: 1px dashed var(--ark-ink-faint);
+  border-radius: 50%;
+}
+
+.rotorRingInner {
+  inset: 30%;
+  background: var(--ark-signal);
+  opacity: var(--ark-depth-art-opacity);
+  mix-blend-mode: multiply;
+}
+
+.rotorSweep {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(25, 25, 25, 0.28) 0deg,
+    rgba(25, 25, 25, 0.02) 60deg,
+    transparent 90deg,
+    transparent 360deg
+  );
+  animation: rotor-spin 14s linear infinite;
+}
+
+.rotorCross {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, transparent calc(50% - 0.5px), var(--ark-line) calc(50% - 0.5px), var(--ark-line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom, transparent calc(50% - 0.5px), var(--ark-line) calc(50% - 0.5px), var(--ark-line) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}
+
+.rotorTag {
+  position: absolute;
+  right: 4%;
+  bottom: 8%;
+  background: var(--ark-ink);
+  color: var(--ark-on-ink);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  padding: 3px 8px;
+}
+
+@keyframes rotor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotorSweep {
+    animation: none;
+    background: conic-gradient(from 45deg, rgba(25, 25, 25, 0.2) 0 30deg, transparent 30deg);
+  }
+}
+
+/* ---- 账号矩阵 ---- */
+
+.matrixHead {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.matrixIndex {
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 700;
+  line-height: 0.85;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--ark-ink);
+}
+
+.matrixTitle {
+  font-size: clamp(22px, 3vw, 32px);
+}
+
+.matrixHead .ark-micro {
+  margin-left: auto;
+}
+
+.grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 168px;
+  padding: 16px;
+  background: var(--ark-panel);
+  border: 1px solid var(--ark-line);
+  transition:
+    transform var(--ark-motion-direct) ease,
+    box-shadow var(--ark-motion-direct) ease;
+}
+
+.card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--ark-depth-shadow-signal);
+}
+
+.card:hover .cardEnter {
+  background: var(--ark-signal);
+}
+
+.cardIndex {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 0.9;
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--ark-ink-faint);
+}
+
+.cardName {
+  font-size: clamp(20px, 2.4vw, 27px);
+  font-weight: 700;
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+}
+
+.cardMeta {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardType {
+  border: 1px solid var(--ark-line-soft);
+  padding: 2px 6px;
+}
+
+.cardEnter {
+  font-weight: 700;
+  color: var(--ark-ink);
+  padding: 2px 6px;
+  transition: background var(--ark-motion-direct) ease;
+}
+
+.cardInvalid {
+  background: var(--ark-signal);
+  color: var(--ark-ink);
+  padding: 2px 6px;
+  font-weight: 700;
+}
+
+.cardSkeleton {
+  background: linear-gradient(100deg, var(--ark-panel-dim) 40%, var(--ark-panel) 50%, var(--ark-panel-dim) 60%);
+  background-size: 200% 100%;
+  animation: skeleton-slide 1.4s ease infinite;
+}
+
+@keyframes skeleton-slide {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardSkeleton {
+    animation: none;
+  }
+}
+
+/* ---- 提示面板(错误/空态) ---- */
+
+.notice {
+  border: 1px solid var(--ark-line);
+  background: var(--ark-panel);
+  padding: 22px;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.noticeTitle {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.action {
+  min-height: var(--ark-tap-min);
+  padding: 8px 22px;
+  background: var(--ark-signal);
+  border: 1px solid var(--ark-ink);
+  font-weight: 700;
+}
+
+.action:hover {
+  box-shadow: 3px 3px 0 var(--ark-ink);
+  transform: translate(-1px, -1px);
+}
+
+/* ---- 响应式重导演 ---- */
+
+@media (max-width: 860px), (orientation: portrait) {
+  .hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .rotor {
+    display: none;
+  }
+}

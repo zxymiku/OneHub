@@ -1,0 +1,30 @@
+/*
+ * OneHub 设计 token — ark-ui endfield 家族
+ * 契约: family=endfield(白/炭黑/信号黄现场工程系统), 深度行为见 depth.css
+ * 规则: 中性表面 ≥75% 构图; 信号黄只标记动作/选择; 绿色只标记在线/验证状态;
+ *       默认零圆角, 1px 边线
+ */
+:root {
+  --ark-ink: #191919;
+  --ark-ink-soft: rgba(25, 25, 25, 0.66);
+  --ark-ink-faint: rgba(25, 25, 25, 0.38);
+  --ark-paper: #f2f2f0;
+  --ark-panel: #fafaf8;
+  --ark-panel-dim: #e8e8e4;
+  --ark-signal: #fffa00;
+  --ark-state: #00ffa2;
+  --ark-line: rgba(25, 25, 25, 0.88);
+  --ark-line-soft: rgba(25, 25, 25, 0.16);
+  --ark-on-ink: #f2f2f0;
+
+  --ark-font: "Space Grotesk", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  --ark-radius: 0px;
+
+  --ark-motion-direct: 200ms;
+  --ark-motion-direct-out: 260ms;
+
+  --ark-track-rail: 4.5rem;
+  --ark-track-dock: 2.75rem;
+
+  --ark-tap-min: 40px;
+}
