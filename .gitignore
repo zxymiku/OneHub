@@ -5,6 +5,9 @@ node_modules/
 dist/
 .dev.vars*
 
+# wrangler 生成配置(由 wrangler.template.jsonc + CF_KV_* 注入生成, 含真实 id)
+worker/wrangler.jsonc
+
 # wrangler 本地状态
 .wrangler/
 
