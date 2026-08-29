@@ -114,7 +114,8 @@ npm run build:web
 npm run deploy            # 得到 https://onehub.<你的子域>.workers.dev
 ```
 
-**之后的更新全自动**:按 `docs/setup-cloudflare.md §6.1` 配置一次 GitHub Secrets,此后每个 PR 合并进 main,Cloudflare 都会自动构建部署,无需本地操作。打开域名,验证清单见 [docs/setup-cloudflare.md §7](docs/setup-cloudflare.md#7-验证清单)。可选进阶:自定义域名、本地开发模式,均见该文档。
+**之后的更新全自动**:从两种自动部署方式里选一种、按 `docs/setup-cloudflare.md` 做一次性配置 ——
+§6.1 **GitHub Actions**(仓库内工作流,加 4 个 Secrets)或 §6.2 **Workers Builds**(全程 Cloudflare 网页操作、零 Token)。此后每个 PR 合并进 main,Cloudflare 都会自动构建部署,无需本地操作。打开域名,验证清单见 [docs/setup-cloudflare.md §7](docs/setup-cloudflare.md#7-验证清单)。可选进阶:自定义域名、本地开发模式,均见该文档。
 
 ---
 
