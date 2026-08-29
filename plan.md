@@ -135,7 +135,8 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | PR-10 | `feat/local-admin` | worker/admin、scripts、frontend/features/admin、docs | 管理台改为**仅本地开发**(`ADMIN_MODE=local`,线上全部 404 零管理面)+ `account:sync` 本地→线上 KV 同步;契约 docs/api.md §8(已同步改) | 全部 | 已合并 |
 | PR-11 | `feat/home-minimal` | `frontend/src/features/accounts` | 首页去口号化:移除 hero 文案区,账号矩阵直达 | PR-4 | 已合并 |
 | PR-12 | `feat/auto-deploy` | `.github/workflows/deploy.yml`、docs | main 分支自动部署:GitHub Actions 构建+wrangler deploy(未配 secrets 时跳过);setup-cloudflare §6.1 教程 | 全部 | 已合并 |
-| PR-13 | `feat/public-safe-config` | worker/(模板+生成器)、scripts/kv、CI、docs | **开源安全**:wrangler.jsonc 改为模板生成不入库,KV id 经 `CF_KV_*` 注入,仓库零标识符;安全.md 开源检查清单 | 全部 | 本 PR |
+| PR-13 | `feat/public-safe-config` | worker/(模板+生成器)、scripts/kv、CI、docs | **开源安全**:wrangler.jsonc 改为模板生成不入库,KV id 经 `CF_KV_*` 注入,仓库零标识符;安全.md 开源检查清单 | 全部 | 已合并 |
+| PR-14 | `docs/builds-guide` | docs/setup-cloudflare.md、README、验收清单 | Workers Builds(方案 B)完整教程:授权/构建设置/构建变量/排障;§6 重构为方案 A/B 对照 | docs | 本 PR |
 
 ## 八、API 契约摘要(完整版见 docs/api.md,前后端以此为准)
 

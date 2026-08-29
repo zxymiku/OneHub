@@ -95,11 +95,13 @@ npm run deploy        # wrangler deploy, 输出形如 https://onehub.<你的子�
 ```
 
 - 更新版本:拉取最新代码后重复第 6 步即可(账号与配置都在 Cloudflare 侧,不受影响)。
-- **自定义域名(可选)**:Dashboard → Workers & Pages → onehub → Settings → Domains & Routes → Add Custom Domain(域名需已托管在该 Cloudflare 账号)。
-- **CI 自动部署**:仓库已内置 `.github/workflows/deploy.yml` —— main 分支每合并一个 PR,自动构建前端并 `wrangler deploy`。启用只需在 GitHub 仓库 **Settings → Secrets and variables → Actions** 添加两个 secrets(见 §6.1);未配置时部署步骤自动跳过,不会报错。
+- **自动部署(二选一)**:仓库支持两种"合并 PR 进 main 后自动构建部署"的方式 ——
+  - **方案 A:GitHub Actions**(配置在仓库内,已内置 `.github/workflows/deploy.yml`),见 §6.1;
+  - **方案 B:Cloudflare 原生 Git 集成(Workers Builds)**,全程在 Cloudflare 网页操作、无需创建 API Token,见 §6.2。
+  - **只启用其中一种**,同时启用会重复部署。
 - **自定义域名(可选)**:Dashboard → Workers & Pages → onehub → Settings → Domains & Routes → Add Custom Domain(域名需已托管在该 Cloudflare 账号)。
 
-### 6.1 配置自动部署的 GitHub Secrets
+### 6.1 方案 A:GitHub Actions
 
 1. 生成 Cloudflare API Token:Dashboard → 右上角头像 → **My Profile → API Tokens → Create Token** → 使用模板 **"Edit Cloudflare Workers"** → Create 并复制(只显示一次);
    - 若部署时报 KV 权限错误,编辑该 Token 追加 **Account → Workers KV Storage → Edit**;
@@ -109,9 +111,68 @@ npm run deploy        # wrangler deploy, 输出形如 https://onehub.<你的子�
    - `CLOUDFLARE_ACCOUNT_ID` = 第 2 步的 ID
    - `CF_KV_ACCOUNTS_ID` / `CF_KV_GATE_ID` = §2 创建的两个 KV namespace id
 
-之后每次 PR 合并进 main,GitHub Actions 会自动构建 + 部署(Action 日志可见部署后的 workers.dev 地址)。也可以在 Actions 页面手动 **Run workflow** 触发。
+之后每次 PR 合并进 main,GitHub Actions 会自动构建 + 部署(Action 日志可见部署后的 workers.dev 地址)。也可以在 Actions 页面手动 **Run workflow** 触发;未配置 secrets 时部署步骤自动跳过,不会报错。
 
-**备选方案(Cloudflare 原生 Git 集成,免 Token)**:Dashboard → Workers & Pages → onehub → **Settings → Build → Connect**(Workers Builds),绑定本仓库与 main 分支,构建命令填 `npm ci && npm run build:web && node worker/gen-wrangler.mjs`,部署命令 `npx wrangler deploy -c worker/wrangler.jsonc`;并在构建设置的 **Variables** 里添加 `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`CF_KV_ACCOUNTS_ID`、`CF_KV_GATE_ID` 四个变量。两种方式二选一即可,避免同时启用造成重复部署。
+### 6.2 方案 B:Cloudflare 原生 Git 集成(Workers Builds,全程网页操作)
+
+无需创建 API Token——部署鉴权由 Cloudflare 与 GitHub 的集成自动完成,您只需要授权仓库 + 填两个构建变量。
+
+**前置条件**
+
+- Worker `onehub` 已存在(至少手动 `npm run deploy` 部署过一次;§2 的两个 KV 命名空间已创建);
+- `worker/wrangler.template.jsonc` 中的 Worker 名 `onehub` 与 Dashboard 里的 Worker 名一致(Workers Builds 会校验配置文件的 name 字段,不一致会构建失败);
+- 您有 GitHub 仓库的管理权限(安装 App 时授权)。
+
+**第 1 步:授权并连接仓库**
+
+1. Dashboard → **Workers & Pages** → 点进 `onehub`;
+2. **Settings → Builds → Connect**(首次进入显示 "Set up builds");
+3. 选择 **GitHub** → 弹出 Cloudflare GitHub App 安装页 → 选择 **Only select repositories** → 勾选 `OneHub`(私有仓库也可选到)→ **Install & Authorize**;
+4. 回到 Cloudflare,在仓库下拉框中选择 `zxymiku/OneHub`,生产分支填 **`main`**。
+
+**第 2 步:构建设置(按下面逐项填写)**
+
+| 字段 | 填写值 | 说明 |
+|---|---|---|
+| Root directory | **留空**(即仓库根) | 构建命令需要在根目录跑 workspaces 安装 |
+| Build command | `npm ci && npm run build:web && node worker/gen-wrangler.mjs` | 安装依赖 → 构建前端 → 生成含真实 KV id 的 `worker/wrangler.jsonc` |
+| Deploy command | `npx wrangler deploy -c worker/wrangler.jsonc` | `-c` 指向子目录里的配置;配置内 `../frontend/dist` 会以配置文件位置解析,正好指向刚构建的产物 |
+| Non-production branch deploy command | `npx wrangler versions upload -c worker/wrangler.jsonc` | 非 main 分支(push/PR)只上传为预览版本,**不会**更新线上 |
+
+**第 3 步:添加构建变量(Settings → Build → Variables)**
+
+| 变量名 | 值 | 类型 |
+|---|---|---|
+| `CF_KV_ACCOUNTS_ID` | §2 创建的 ACCOUNTS 命名空间 id | Secret |
+| `CF_KV_GATE_ID` | §2 创建的 GATE 命名空间 id | Secret |
+| `NODE_VERSION`(可选,推荐) | `22` | Plain text |
+
+说明:构建变量只在构建过程可见,不会进入运行时,也不会出现在仓库;`CF_KV_*` 用于注入生成 wrangler.jsonc(开源零标识符设计,见 docs/安全.md §4)。wrangler 版本自动取自 `worker/package.json`,无需额外指定。
+
+**第 4 步:首次构建与验证**
+
+1. 保存设置后 Workers Builds 会立即触发一次构建;之后每次 push 到 `main`(即 PR 合并)自动构建;
+2. 构建进度与日志:**Deployments 标签页 → View build history**(或 Version History 里对应版本旁的 View build);绿色 = 部署成功,打开 workers.dev 地址确认版本生效;
+3. 手动重跑:构建历史里选一条 → **Retry build**(使用重试那一刻的最新构建设置)。
+
+**日常行为与注意**
+
+- 合并 PR → 自动构建部署;普通功能分支 push → 只生成预览版本,不影响线上;
+- 改了构建设置只对**下一次**构建生效;
+- 站点密钥(`wrangler secret put` 设置的 ACCESS_PASSWORD / GATE_SECRET)存在 Worker 上,**不受自动部署影响**;
+- 断开/更换仓库:**Settings → Builds → Disconnect**(更换仓库需先断开再重新 Connect)。
+
+**常见问题排查**
+
+| 现象 | 原因与处理 |
+|---|---|
+| 构建失败提示 Worker name 不匹配 | Dashboard Worker 名必须与配置文件里的 `"name": "onehub"` 一致;改 Dashboard 侧名字或模板中的 name 后重试 |
+| 日志报 `CF_KV_ACCOUNTS_ID is empty` 类警告,部署到一半失败 | 第 3 步变量没加或拼写错误(注意全大写、下划线) |
+| `npm ci` 报 Node 版本相关错误 | 加构建变量 `NODE_VERSION=22` |
+| 前端产物缺失(部署后页面 404) | Build command 被改过,确认包含 `npm run build:web` 且 Root directory 留空 |
+| 想改回手动部署 | Settings → Builds → Disconnect 即可,Worker 与 KV 数据不受影响 |
+
+> **与方案 A 的取舍**:方案 B 全程网页点选、零 Token 管理,适合个人使用;方案 A 的配置随仓库版本化、审查可见,适合多人/多 agent 协作。两者不要同时启用。
 
 ## 7. 验证清单
 
