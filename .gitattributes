@@ -1,0 +1,7 @@
+# 统一换行符, 仓库内一律 LF
+* text=auto eol=lf
+
+# Windows 脚本如确需 CRLF 在此追加
+*.png binary
+*.jpg binary
+*.ico binary
