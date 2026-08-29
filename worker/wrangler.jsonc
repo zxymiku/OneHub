@@ -16,8 +16,8 @@
     "run_worker_first": ["/api/*"]
   },
   "kv_namespaces": [
-    { "binding": "ACCOUNTS", "id": "<KV_NAMESPACE_ID>" },
-    { "binding": "GATE", "id": "<KV_NAMESPACE_ID_2>" }
+    { "binding": "ACCOUNTS", "id": "72dbe94e6f1749b6b9b476fcbc5195cb" },
+    { "binding": "GATE", "id": "9a6a3a44a1dc494e97b89b06c858716e" }
   ],
   "vars": {
     "ACCESS_PASSWORD": ""
