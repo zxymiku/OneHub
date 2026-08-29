@@ -1,0 +1,298 @@
+/* 文件浏览: 面包屑 + 仪表 + complex 密度列表 */
+
+.page {
+  display: grid;
+  gap: 18px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.back {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ark-tap-min);
+  padding: 6px 12px;
+  border: 1px solid var(--ark-line);
+  background: var(--ark-panel);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.back:hover {
+  background: var(--ark-signal);
+}
+
+.headMain {
+  min-width: 0;
+  flex: 1;
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px;
+  margin-top: 4px;
+  font-size: clamp(17px, 2.2vw, 22px);
+  font-weight: 700;
+}
+
+.crumb {
+  padding: 2px 4px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+button.crumb:hover {
+  background: var(--ark-signal);
+}
+
+.crumbCurrent {
+  background: var(--ark-ink);
+  color: var(--ark-on-ink);
+  padding: 2px 8px;
+}
+
+.crumbSep {
+  color: var(--ark-ink-faint);
+  margin: 0 2px;
+}
+
+.filter {
+  flex: none;
+  width: min(240px, 40vw);
+  min-height: var(--ark-tap-min);
+  padding: 8px 12px;
+  font: inherit;
+  border: 1px solid var(--ark-line);
+  border-radius: var(--ark-radius);
+  background: var(--ark-panel);
+}
+
+.filter:focus-visible {
+  outline: 2px solid var(--ark-ink);
+  outline-offset: 0;
+}
+
+/* ---- 读出仪表 ---- */
+
+.instruments {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--ark-line);
+  background: var(--ark-panel);
+}
+
+.instruments > div {
+  padding: 10px 14px;
+  border-right: 1px solid var(--ark-line-soft);
+}
+
+.instruments > div:last-child {
+  border-right: none;
+}
+
+.instruments dd {
+  margin: 0;
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 700;
+}
+
+/* ---- 列表 ---- */
+
+.list {
+  border: 1px solid var(--ark-line);
+  background: var(--ark-panel);
+  box-shadow: var(--ark-depth-shadow-panel);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px 110px 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  min-height: 46px;
+  border-bottom: 1px solid var(--ark-line-soft);
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rows > li:last-child .row {
+  border-bottom: none;
+}
+
+.rowHead {
+  min-height: 40px;
+  background: var(--ark-panel-dim);
+  border-bottom: 1px solid var(--ark-line);
+}
+
+.sorter {
+  justify-self: start;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ark-ink-soft);
+  min-height: var(--ark-tap-min);
+}
+
+.sorter:hover {
+  color: var(--ark-ink);
+  background: var(--ark-signal);
+}
+
+.sorterStub {
+  width: 48px;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--ark-tap-min);
+  padding: 4px 0;
+  font-weight: 500;
+  text-align: left;
+  min-width: 0;
+}
+
+.name:hover {
+  background: var(--ark-signal);
+}
+
+.nameText {
+  overflow-wrap: anywhere;
+}
+
+.marker {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ark-ink);
+}
+
+.marker[data-kind="folder"] {
+  background: var(--ark-ink);
+}
+
+.ext {
+  border: 1px solid var(--ark-line-soft);
+  padding: 0 4px;
+  font-size: 10px;
+}
+
+.size,
+.date {
+  color: var(--ark-ink-soft);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dl {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--ark-line);
+  font-weight: 700;
+}
+
+a.dl:hover {
+  background: var(--ark-ink);
+  color: var(--ark-on-ink);
+}
+
+.rowSkeleton {
+  background: linear-gradient(100deg, var(--ark-panel-dim) 40%, var(--ark-panel) 50%, var(--ark-panel-dim) 60%);
+  background-size: 200% 100%;
+  animation: browse-skeleton 1.4s ease infinite;
+}
+
+@keyframes browse-skeleton {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rowSkeleton {
+    animation: none;
+  }
+}
+
+/* ---- 提示面板 ---- */
+
+.notice {
+  border: 1px solid var(--ark-line);
+  background: var(--ark-panel);
+  padding: 24px;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.noticeTitle {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.action {
+  min-height: var(--ark-tap-min);
+  padding: 8px 22px;
+  background: var(--ark-signal);
+  border: 1px solid var(--ark-ink);
+  font-weight: 700;
+}
+
+.action:hover {
+  box-shadow: 3px 3px 0 var(--ark-ink);
+  transform: translate(-1px, -1px);
+}
+
+/* ---- 窄屏重导演: 仪表 2 列, 隐藏日期列 ---- */
+
+@media (max-width: 760px), (orientation: portrait) {
+  .head {
+    flex-wrap: wrap;
+  }
+
+  .filter {
+    width: 100%;
+  }
+
+  .instruments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .instruments > div:nth-child(2n) {
+    border-right: none;
+  }
+
+  .instruments > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--ark-line-soft);
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr) 76px 40px;
+  }
+
+  .row .date,
+  .rowHead .sorter:nth-of-type(3) {
+    display: none;
+  }
+}
