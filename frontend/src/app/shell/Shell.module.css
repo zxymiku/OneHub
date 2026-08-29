@@ -105,6 +105,20 @@
   border: 1px solid var(--ark-line);
 }
 
+.adminLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 10px;
+  border: 1px solid var(--ark-line);
+  background: var(--ark-panel);
+  color: var(--ark-ink);
+}
+
+.adminLink:hover {
+  background: var(--ark-signal);
+}
+
 .chipState {
   background: var(--ark-paper);
 }

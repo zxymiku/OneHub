@@ -10,6 +10,8 @@ export interface Env {
   ACCESS_PASSWORD?: string;
   /** 门 Cookie 的 HMAC 密钥; 设置了 ACCESS_PASSWORD 时必填 */
   GATE_SECRET?: string;
+  /** 管理台密码; 未设置 = 管理台整体关闭(403 ADMIN_DISABLED) */
+  ADMIN_PASSWORD?: string;
 }
 
 export type AccountType = "personal" | "business";

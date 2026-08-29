@@ -7,6 +7,7 @@ OneHub 把您的多个 OneDrive(个人版、E3、E5、企业版混合均可)聚�
 ## 功能特性
 
 - 🔢 **多账号聚合**:任意数量 OneDrive 账号,自定义展示名,首页矩阵式进入
+- 🖥 **网页管理台**:浏览器 `/admin` 页添加/改名/删除账号(个人版设备码可视化授权、企业版表单即验即存),独立管理密码保护,默认关闭
 - 📁 **在线浏览**:目录树导航、面包屑、文件名/大小/时间展示
 - 🔗 **直链下载**:直接推送 OneDrive 预授权临时链接(约 1 小时有效),流量不经过服务器
 - 👁 **在线预览**:docx / xlsx / pptx(微软官方渲染)、txt / markdown / 代码文本、pdf、图片、mp4 等视频、音频;不支持的类型明确提示"此文件类型不支持在线预览,请下载后查看"
@@ -63,6 +64,21 @@ npx wrangler secret put GATE_SECRET       # 输入随机长串: openssl rand -he
 
 ### 第 4 步:添加您的 OneDrive 账号
 
+**方式 A:网页管理台(推荐,无需命令行)**
+
+```bash
+npx wrangler secret put ADMIN_PASSWORD      # 设置管理密码(一次性)
+npm run build:web && npm run deploy
+```
+
+部署后打开 `https://<部署域名>/admin`,输入管理密码即可:
+
+- **+ 个人版**:填展示名和应用 ID → 页面显示设备码 → 按提示在微软页面输入并登录 → 页面自动等待并完成添加;
+- **+ 企业版**:表单填入租户 ID / 应用 ID / 密钥 / UPN → 服务端即时验证,通过才写入;
+- 随时**改名 / 删除**,与首页展示即时同步。
+
+**方式 B:命令行 CLI**
+
 ```bash
 # 个人版:屏幕出现设备码 → 打开 https://microsoft.com/devicelogin 输入并登录对应账号
 npm run account:add -- --name 一号机 --type personal --client-id <应用程序ID>
@@ -75,7 +91,7 @@ npm run account:add -- --name 账号2 --type business \
 npm run account:list      # 检查;注意加 --remote 写入线上 KV(见脚本帮助)
 ```
 
-`--name` 就是首页展示的名字,随意取("一号机"、"账号2"、家庭云盘…)。
+两种方式管理同一份云端数据,可混用。`--name` 就是首页展示的名字,随意取("一号机"、"账号2"、家庭云盘…)。
 
 ### 第 5 步:部署上线
 
@@ -120,6 +136,11 @@ Office 在线渲染对文件大小有限制(Excel 约 10MB);直链过期时刷�
 <details>
 <summary><b>哪些文件能在线预览?</b></summary>
 docx/xlsx/pptx(微软渲染)、txt/markdown/代码文本、pdf、常见图片、mp4/webm 视频、mp3/flac 等音频;旧版 doc/xls/ppt 与未知格式显示"不支持在线预览,请下载后查看"。
+</details>
+
+<details>
+<summary><b>忘记管理密码 / 想关闭管理台?</b></summary>
+<code>npx wrangler secret put ADMIN_PASSWORD</code> 覆盖为新值;要彻底关闭则删除:<code>npx wrangler secret delete ADMIN_PASSWORD</code> 后重新部署。管理密码与站点访问密码相互独立。
 </details>
 
 <details>

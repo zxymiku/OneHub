@@ -9,6 +9,7 @@ import { apiDelete } from "../../shared/api/client";
 export function Shell({ children }: { children: ReactNode }) {
   const { status: gate, error: gateError, refresh } = useGate();
   const [online, setOnline] = useState<boolean | null>(null);
+  const [adminEnabled, setAdminEnabled] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -19,6 +20,14 @@ export function Shell({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         if (!cancelled) setOnline(false);
+      });
+    fetch("/api/admin/status")
+      .then((res) => res.json())
+      .then((body: { enabled?: boolean }) => {
+        if (!cancelled) setAdminEnabled(Boolean(body.enabled));
+      })
+      .catch(() => {
+        /* 管理台状态获取失败时隐藏入口 */
       });
     return () => {
       cancelled = true;
@@ -57,6 +66,11 @@ export function Shell({ children }: { children: ReactNode }) {
         <header className={s.topbar}>
           <span className={`ark-micro ${s.topbarView}`}>{viewLabel}</span>
           <span className={s.topbarRight}>
+            {adminEnabled && location.pathname !== "/admin" ? (
+              <Link to="/admin" className={`ark-micro ${s.adminLink}`}>
+                管理
+              </Link>
+            ) : null}
             {gate?.required ? (
               gate.unlocked ? (
                 <button type="button" className={`ark-micro ${s.chipState}`} onClick={() => void lockAgain()} title="重新锁定站点">

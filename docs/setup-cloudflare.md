@@ -28,6 +28,14 @@ npx wrangler secret put ACCESS_PASSWORD     # 输入你想要的访问密码
 npx wrangler secret put GATE_SECRET         # 输入一段随机长字符串(HMAC 密钥), 例: openssl rand -hex 32
 ```
 
+**网页管理台(可选)**:设置管理密码后,访问 `/admin` 即可在浏览器里添加/改名/删除 OneDrive 账号,不再需要命令行:
+
+```bash
+npx wrangler secret put ADMIN_PASSWORD      # 输入管理密码(与站点访问密码相互独立)
+```
+
+不设置 `ADMIN_PASSWORD` 则管理台完全关闭(`/admin` 显示"未启用",接口返回 403),没有任何额外攻击面。管理台登录同样受 5 次/10 分钟限速保护。命令行方式(`npm run account:add`)仍然可用,两者管理同一份 KV 数据。
+
 本地开发则在 `worker/.dev.vars`(已 gitignore)里写:
 
 ```
