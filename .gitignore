@@ -1,0 +1,26 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+.dev.vars*
+
+# wrangler 本地状态
+.wrangler/
+
+# 环境变量与密钥(绝不入库)
+.env
+.env.*
+*.local
+
+# 本地 agent 技能包(不入库)
+.skills/
+
+# ZCode 本地会话数据
+.zcode/
+
+# 编辑器与系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

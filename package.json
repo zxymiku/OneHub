@@ -1,0 +1,36 @@
+{
+  "name": "onehub",
+  "version": "0.1.0",
+  "private": true,
+  "description": "多 OneDrive 网盘聚合站 — 多账号展示 / 下载直链 / 在线预览",
+  "type": "module",
+  "workspaces": [
+    "frontend",
+    "worker",
+    "scripts"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "npm run typecheck --if-present --workspaces",
+    "test": "npm run test --if-present --workspaces",
+    "build": "npm run build --if-present --workspaces",
+    "dev:worker": "npm run dev -w worker",
+    "dev:web": "npm run dev -w frontend",
+    "build:web": "npm run build -w frontend",
+    "deploy": "npm run build:web && npm run deploy -w worker",
+    "account:add": "onehub-account add",
+    "account:list": "onehub-account list",
+    "account:remove": "onehub-account remove"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "eslint": "^9.30.0",
+    "prettier": "^3.6.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.35.0"
+  }
+}
