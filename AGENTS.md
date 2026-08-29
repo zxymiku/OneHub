@@ -52,8 +52,10 @@ npm run build          # frontend 产物 + worker 构建通过
 前端 PR 额外必做:
 
 ```bash
-node .skills/ark-ui-skill-main/scripts/audit-ark-ui.mjs frontend/dist/index.html
+node .skills/ark-ui-skill-main/scripts/audit-ark-ui.mjs frontend/dist/index.html frontend/dist/assets/*.css
 ```
+
+(样式经 Vite 外置,必须把构建 CSS 一并传入审计,否则四项检查会误报缺失。)
 
 并自查:桌面 1440×900 与竖屏 390×844 无横向溢出/裁剪/碰撞;键盘可完整走通主流程且焦点可见;`prefers-reduced-motion` 下有静态构图;`endfield × maximal` 契约未漂移(密集列表屏降 complex 密度合规)。
 
@@ -71,7 +73,7 @@ PR 描述按模板填写验证结果;CI 红了不许请求审查。
 
 ## 6. 安全要点(涉及 worker/、scripts/ 的 agent 必读)
 
-- 凭据只出现在:KV 值、Worker 环境(`wrangler.jsonc` 的 vars 引用 / secrets)、用户本地 `.dev.vars`。
+- 凭据只出现在:KV 值、Worker secrets、生成物 `worker/wrangler.jsonc`(不入库)、用户本地 `.dev.vars`。
 - 日志/错误响应中不得输出 token、secret、完整 KV 值。
 - 密码比较用常量时间比较;Cookie 用 HMAC 签名 + HttpOnly + SameSite=Lax;未设 ACCESS_PASSWORD 时所有门端点直接放行。
 - 个人版 refresh_token 每次刷新后**必须回写 KV**(Microsoft 会轮换),否则 90 天后静默失效。

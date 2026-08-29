@@ -20,7 +20,7 @@ OneHub 把您的多个 OneDrive(个人版、E3、E5、企业版混合均可)聚�
 ```
 浏览器 (React SPA)
    │ 只接触: 展示名 / 文件元数据 / 临时直链
-Cloudflare Worker ── 静态页面 + /api/*
+Cloudflare Worker ── 静态页面 + /api/*(管理接口仅存在于本地开发)
    │ 个人版: OAuth 刷新令牌(轮换回写)   E5/E3/企业版: 应用密钥(client credentials)
 Microsoft Graph API
 ```
@@ -78,7 +78,7 @@ npx wrangler secret put GATE_SECRET       # 输入随机长串: openssl rand -he
 账号管理只在您的电脑上进行,线上网站不存在任何管理接口(外部访问一律 404),这是隐私最稳妥的方式:
 
 ```bash
-# 1) 本地启用管理台: 在 worker/.dev.vars(已 gitignore)写入三行:
+# 1) 本地启用管理台: 在 worker/.dev.vars(已 gitignore, 第 3 步已建)再追加三行:
 #    ADMIN_MODE=local
 #    ADMIN_PASSWORD=你的管理密码
 #    GATE_SECRET=任意随机串
@@ -87,7 +87,7 @@ npm run dev:worker        # 2) 启动本地服务(只绑定本机 127.0.0.1)
 #    + 个人版 → 页面显示设备码 → 微软页面输入并登录 → 自动入库
 #    + 企业版 → 表单填写, 服务端即时验证, 通过才写入
 npm run account:sync      # 4) 把本地账号上传到线上 KV(经 Cloudflare 认证连接加密传输)
-npm run deploy            # 5) 首次部署(之后改账号只需重复 3-4)
+npm run deploy            # 5) 首次部署(之后改账号只需重复 3-4, 无需重新部署)
 ```
 
 **方式 B:命令行 CLI**
@@ -141,7 +141,7 @@ npm run deploy            # 得到 https://onehub.<你的子域>.workers.dev
 
 <details>
 <summary><b>某账号过段时间显示"授权失效"</b></summary>
-个人版 refresh_token 长期未使用(90 天)或被吊销会失效,重新跑一次该账号的 <code>account:add</code> 即可(同名覆盖)。Worker 日常会自动刷新并回写,正常使用不会触发。
+个人版 refresh_token 长期未使用(90 天)或被吊销会失效。在本地管理台先删除该账号再重新添加走一次设备码授权,然后 <code>account:sync</code>;或命令行同名 <code>account:add</code> 覆盖。Worker 日常会自动刷新并回写,正常使用不会触发。
 </details>
 
 <details>
@@ -177,4 +177,4 @@ docx/xlsx/pptx(微软渲染)、txt/markdown/代码文本、pdf、常见图片、
 
 ## 技术栈
 
-React 18 · Vite · TypeScript · ark-ui(endfield × maximal)· Cloudflare Workers + KV · Microsoft Graph v1.0 · vitest
+React 18 · Vite · TypeScript · Hono(Worker 路由) · ark-ui(endfield × maximal) · Cloudflare Workers + KV · Microsoft Graph v1.0 · vitest

@@ -25,8 +25,8 @@
 | 托管 | Cloudflare **Workers + 静态资产**(单 Worker 同托管前端与 API)+ **KV** |
 | 访问控制 | 完全公开 + **可选站点密码**(环境变量开关,设置即启用) |
 | Office 预览 | 微软官方 Office Online Viewer(view.officeapps.live.com);其余格式前端渲染 |
-| 仓库流程 | gh CLI 建仓(OneHub,私有);**一切代码只经 PR 进 main**,需求方人工审查合并 |
-| 账号管理 | 账号配置(展示名、凭据)存 KV,经 wrangler CLI 脚本增删改,不做在线管理页 |
+| 仓库流程 | gh CLI 建仓(OneHub);**一切代码只经 PR 进 main**,需求方人工审查合并;**计划开源**,仓库零标识符(配置模板注入,见 PR-13) |
+| 账号管理 | 账号配置存 KV;**仅本地开发**的网页管理台(/admin,`ADMIN_MODE=local`)+ CLI 脚本,经 `account:sync` 同步线上(演进记录:PR-9 引入管理台 → PR-10 收敛为本地专属,见 §十一) |
 
 ## 三、总体架构
 
@@ -39,7 +39,8 @@ Cloudflare Worker(单入口,单域名)
    └─ /api/* → 密码门(HMAC 签名 Cookie,可选)→ 路由模块
         ├─ onedrive/personal: refresh_token ⇄ access_token(轮换回写 KV)
         ├─ onedrive/business: client_credentials(缓存 access_token)
-        └─ tokenCache: KV 缓存,TTL ≈ 55 分钟
+        ├─ tokenCache: KV 缓存,TTL ≈ 55 分钟
+        └─ admin/*(仅本地, ADMIN_MODE=local): 账号增删改 + 设备码流程, 线上 404
    ▼
 Microsoft Graph API v1.0
 ```
@@ -61,6 +62,8 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | `account:<id>` | 见下 | 单账号完整配置(**含凭据,仅 Worker/脚本可见**) |
 | `token:<id>` | `{accessToken, expiresAt}` | access_token 缓存,写 KV 时设 `expirationTtl` |
 | `rl:<ip>` | 计数 | 密码门限速(短 TTL) |
+| `rl-admin:<ip>` | 计数 | 本地管理台登录限速(仅本地写) |
+| `pending:<sessionId>` | 设备码待授权上下文 | 本地管理台个人版流程,TTL 900s(仅本地写) |
 
 `account:<id>` 结构:
 
@@ -99,7 +102,7 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 
 ## 六、页面与预览矩阵
 
-页面:① 首页(Hero + 账号矩阵,展示名卡片点击进入);② 文件浏览页(面包屑/列表/排序/搜索/状态仪表);③ 预览面板;④ 密码门页(启用时);⑤ 404/错误态。
+页面:① 首页(精简页头 + 账号矩阵,展示名卡片点击进入;PR-11 去口号化);② 文件浏览页(面包屑/列表/排序/搜索/状态仪表);③ 预览面板;④ 密码门页(启用时);⑤ 本地管理台 /admin(仅本地);⑥ 404/错误态。
 
 | 类型 | 扩展名 | 预览方案 |
 |---|---|---|
@@ -115,7 +118,7 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | 音频 | mp3/wav/ogg/flac/m4a/aac | `<audio controls>` 直链 |
 | 其他 | — | "**此文件类型不支持在线预览,请下载后查看**" + 下载按钮 |
 
-类型判定集中在 `frontend/src/shared/fileTypes/`,必须配单元测试;Office Viewer 加载失败(文件过大等)也要落到下载引导。
+类型判定集中在 `frontend/src/shared/fileTypes.ts`,必须配单元测试;Office Viewer 加载失败(文件过大等)也要落到下载引导。
 
 ## 七、模块认领表
 
@@ -123,7 +126,7 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 
 | # | 分支名 | 目录范围 | 内容摘要 | 依赖 | 状态 |
 |---|---|---|---|---|---|
-| PR-1 | `docs/project-scaffold` | 根文档、docs/、.github/、脚手架配置 | 本计划、AGENTS.md、README 全链路教程、API 契约、CI/PR 模板、workspaces 骨架 | 无 | **本 PR** |
+| PR-1 | `docs/project-scaffold` | 根文档、docs/、.github/、脚手架配置 | 本计划、AGENTS.md、README 全链路教程、API 契约、CI/PR 模板、workspaces 骨架 | 无 | 已合并 |
 | PR-2 | `feat/worker-core` | `worker/` | Worker 全部后端:路由、Graph 客户端、双认证策略、token 缓存轮换、账号注册表、密码门端点;vitest 单测(mock Graph) | docs/api.md | 已提PR #2 |
 | PR-3 | `feat/account-cli` | `scripts/` | 账号管理 CLI:add(个人版设备码流/企业版密钥验证并解析 driveId)、list、remove,经 wrangler 写 KV | docs/api.md §KV | 已提PR #3 |
 | PR-4 | `feat/frontend-shell` | `frontend/` | Vite+React 脚手架、ark-ui endfield/maximal token 体系、应用壳(rail/dock/舞台分层)、首页账号矩阵、gate 状态检测跳转 | docs/api.md、§5 | 已提PR #4 |
@@ -136,7 +139,9 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | PR-11 | `feat/home-minimal` | `frontend/src/features/accounts` | 首页去口号化:移除 hero 文案区,账号矩阵直达 | PR-4 | 已合并 |
 | PR-12 | `feat/auto-deploy` | `.github/workflows/deploy.yml`、docs | main 分支自动部署:GitHub Actions 构建+wrangler deploy(未配 secrets 时跳过);setup-cloudflare §6.1 教程 | 全部 | 已合并 |
 | PR-13 | `feat/public-safe-config` | worker/(模板+生成器)、scripts/kv、CI、docs | **开源安全**:wrangler.jsonc 改为模板生成不入库,KV id 经 `CF_KV_*` 注入,仓库零标识符;安全.md 开源检查清单 | 全部 | 已合并 |
-| PR-14 | `docs/builds-guide` | docs/setup-cloudflare.md、README、验收清单 | Workers Builds(方案 B)完整教程:授权/构建设置/构建变量/排障;§6 重构为方案 A/B 对照 | docs | 本 PR |
+| PR-14 | `docs/builds-guide` | docs/setup-cloudflare.md、README、验收清单 | Workers Builds(方案 B)完整教程:授权/构建设置/构建变量/排障;§6 重构为方案 A/B 对照 | docs | 已合并 |
+
+> §7 全部 14 个 PR 已合并。后续新增工作请按同样格式在表尾追加行,状态从 `@<agent> 进行中` 流转到 `已提PR #N`/`已合并`。
 
 ## 八、API 契约摘要(完整版见 docs/api.md,前后端以此为准)
 
@@ -150,6 +155,7 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | `GET /api/accounts/:id/file/:itemId` | 单文件元数据 + 直链 | `{id,name,size,downloadUrl}` |
 | `GET /api/accounts/:id/download/:itemId` | 下载 | **302 → downloadUrl** |
 | `GET /api/accounts/:id/raw/:itemId` | 文本代理(≤2MB) | 原始字节流 |
+| `/api/admin/*` | 管理台:status/auth/accounts 增删改/设备码流程 | **仅本地可用**(线上 404),完整契约见 docs/api.md §8 |
 
 错误统一:`{error:{code,message}}` + 合理 HTTP 状态码;账号授权失效时 `/api/accounts` 用 `status:"invalid"` 表达,前端展示"需重新授权"而不是报错堆栈。
 
@@ -161,14 +167,24 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 
 ## 十、里程碑
 
-- **M1(当前)**:文档+契约+脚手架(PR-1)
-- **M2**:后端可用,CLI 可加真实账号(PR-2、PR-3)
-- **M3**:前端四屏全部可用(PR-4~7)
-- **M4**:CI/部署收尾,真实账号端到端验收(PR-8)
+- **M1** 文档+契约+脚手架(PR-1)✅
+- **M2** 后端可用,CLI 可加真实账号(PR-2、PR-3)✅
+- **M3** 前端四屏全部可用(PR-4~7)✅
+- **M4** CI/部署收尾,端到端验收(PR-8)✅
+- **M5** 网页管理台(本地专属)与自动部署(PR-9~12)✅
+- **M6** 开源安全加固(仓库零标识符,PR-13)✅
+- **当前状态**:已上线运行(自定义域名);后续工作按 §7 追加认领
 
 ## 十一、已否决的备选方案(记录避免重复讨论)
 
 - Pages + Functions:Cloudflare 已停止增强,选 Workers + 静态资产;
 - 纯前端 JS 渲染 Office 文档:pptx 支持差、包体积大,选微软官方 Viewer;
-- 在线账号管理页:多一个暴露面,选 KV + CLI 脚本;
-- 所有账号统一 OAuth:企业版 client credentials 更稳(不依赖人工重授权),按账号类型分策略。
+- **线上**在线账号管理页:公网暴露高权限入口(密码暴破面/Cookie 窃取面),收敛为**仅本地**管理台(`ADMIN_MODE=local`)+ `account:sync`(PR-9 → PR-10 的演进);
+- 所有账号统一 OAuth:企业版 client credentials 更稳(不依赖人工重授权),按账号类型分策略;
+- 手工维护 wrangler.jsonc 入库:开源后暴露账户标识符,改模板 + 环境注入生成(PR-13)。
+
+## 十二、运行状态速览
+
+- 线上:自定义域名已绑定并验证(docs/setup-cloudflare.md §6 可绑定 workers.dev 或自有域名);
+- 自动部署:方案 A(GitHub Actions)与方案 B(Workers Builds)**二选一**已配置(docs/setup-cloudflare.md §6.1/§6.2);
+- 账号日常维护:本地 `/admin` → `npm run account:sync`(README 第 4 步)。

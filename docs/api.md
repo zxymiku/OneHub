@@ -6,7 +6,7 @@
 
 ## 0. 通用行为
 
-- **密码门**:若部署时设置了 `ACCESS_PASSWORD`,除 `GET /api/health`、`GET /api/gate/*` 外的所有端点要求有效门 Cookie,否则 `401 {"error":{"code":"GATE_REQUIRED",...}}`;未设置密码时全站放行。
+- **密码门**:若部署时设置了 `ACCESS_PASSWORD`,除 `GET /api/health`、`GET /api/gate/*`、`/api/admin/*`(管理台自带独立认证,仅本地存在)外的所有端点要求有效门 Cookie,否则 `401 {"error":{"code":"GATE_REQUIRED",...}}`;未设置密码时全站放行。
 - **账号失效**:账号授权失效时,`/api/accounts` 中该账号 `status:"invalid"`;对其调用资源端点返回 `409 {"error":{"code":"ACCOUNT_INVALID",...}}`,前端引导重新授权而不是展示堆栈。
 - 直链时效:`downloadUrl` 为 Graph 预授权临时链接(约 1 小时),前端每次预览/下载前现取,不得长期缓存。
 
@@ -92,17 +92,6 @@ GET /api/accounts/:id/raw/:itemId
 // 仅用于 ≤2MB 的文本类文件; 实现为流式转发并统计字节数截断
 ```
 
-## 8. Graph 映射(实现参考,非对外契约)
-
-| 场景 | personal | business |
-|---|---|---|
-| 取 token | `POST login.microsoftonline.com/consumers/oauth2/v2.0/token` `grant_type=refresh_token`(响应的新 refresh_token 回写 KV) | `POST login.microsoftonline.com/{tenantId}/oauth2/v2.0/token` `grant_type=client_credentials` `scope=https://graph.microsoft.com/.default` |
-| drive | `/v1.0/me/drive` | `/v1.0/users/{upn}/drive` |
-| 列目录 | `/v1.0/me/drive/root:{path}:/children` | `/v1.0/users/{upn}/drive/root:{path}:/children` |
-| 元数据 | `/v1.0/me/drive/items/{id}?$select=...` | `/v1.0/users/{upn}/drive/items/{id}?$select=...` |
-
-`$select=id,name,size,lastModifiedDateTime,folder,file,content.downloadUrl` 并附加 `@microsoft.graph.downloadUrl`。token 缓存键 `token:<id>`(KV `expirationTtl=3300` 秒)。Graph 401 时强制刷新一次重试,再失败置账号 `status=invalid`。
-
 ## 8. 管理台(**仅本地开发**,网页添加账号)
 
 > **本地专属,线上不存在**:管理台只在 `wrangler dev` 本地开发时可用(需在 `.dev.vars` 设置 `ADMIN_MODE=local` 与 `ADMIN_PASSWORD`)。`wrangler dev` 默认仅绑定 127.0.0.1,局域网/外网均无法访问。
@@ -167,28 +156,44 @@ POST /api/admin/accounts/personal/poll
 → 409 {"error":{"code":"AUTH_FAILED","message":"<微软拒绝原因的中文摘要>"}}
 ```
 
-### 8.4 Worker 环境绑定增补
+### 8.4 本地环境变量(.dev.vars,仅本地开发)
 
-```jsonc
-// .dev.vars(仅本地开发, 已 gitignore, 绝不部署):
-//   ADMIN_MODE=local        ← 管理台总开关, 只有本地 dev 有
-//   ADMIN_PASSWORD=<管理密码>
-//   GATE_SECRET=<任意随机串>  ← 复用为管理 Cookie HMAC 密钥
-// 线上 wrangler.jsonc / secrets: 不需要 ADMIN_MODE 与 ADMIN_PASSWORD
+```text
+ADMIN_MODE=local          ← 管理台总开关, 只有本地 dev 有
+ADMIN_PASSWORD=<管理密码>
+GATE_SECRET=<任意随机串>   ← 复用为管理 Cookie HMAC 密钥
+CF_KV_ACCOUNTS_ID / CF_KV_GATE_ID   ← KV 注入(见 §10)
 ```
 
+## 9. Graph 映射(实现参考,非对外契约)
+
+| 场景 | personal | business |
+|---|---|---|
+| 取 token | `POST login.microsoftonline.com/consumers/oauth2/v2.0/token` `grant_type=refresh_token`(响应的新 refresh_token 回写 KV) | `POST login.microsoftonline.com/{tenantId}/oauth2/v2.0/token` `grant_type=client_credentials` `scope=https://graph.microsoft.com/.default` |
+| drive | `/v1.0/me/drive` | `/v1.0/users/{upn}/drive` |
+| 列目录 | `/v1.0/me/drive/root:/path:/children` | `/v1.0/users/{upn}/drive/root:/path:/children` |
+| 元数据 | `/v1.0/me/drive/items/{id}?$select=...` | `/v1.0/users/{upn}/drive/items/{id}?$select=...` |
+
+`$select=id,name,size,lastModifiedDateTime,folder,file,content.downloadUrl` 并附加 `@microsoft.graph.downloadUrl`。token 缓存键 `token:<id>`(KV `expirationTtl=3300` 秒)。Graph 401 时强制刷新一次重试,再失败置账号 `status=invalid`。
+
+## 10. Worker 环境绑定
+
+**配置文件 `worker/wrangler.jsonc` 是生成物,不入库**(开源零标识符设计)。唯一入库的配置源是 `worker/wrangler.template.jsonc`(占位符版),由 `node worker/gen-wrangler.mjs` 在每次 dev/deploy 前生成(改配置请改模板):
 
 ```jsonc
+// 由模板生成后的形态(KV id 已注入):
 {
   "name": "onehub",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
   "assets": { "directory": "../frontend/dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*"] },
   "kv_namespaces": [
-    { "binding": "ACCOUNTS", "id": "<KV_NAMESPACE_ID>" },
-    { "binding": "GATE", "id": "<KV_NAMESPACE_ID_2>" }
+    { "binding": "ACCOUNTS", "id": "<由 CF_KV_ACCOUNTS_ID 注入>" },
+    { "binding": "GATE", "id": "<由 CF_KV_GATE_ID 注入>" }
   ],
-  "vars": { "ACCESS_PASSWORD": "" }   // 留空=公开; 生产建议用 `wrangler secret put` 覆盖
+  "vars": { "ACCESS_PASSWORD": "" }   // 留空=公开; 生产用 `wrangler secret put ACCESS_PASSWORD` 覆盖
   // secrets: ACCESS_PASSWORD(可选), GATE_SECRET(设置密码时必填, HMAC 密钥)
 }
 ```
+
+注入来源优先级:环境变量 > `worker/.dev.vars` 同名键 > 占位符(仅本地 wrangler dev 模拟可用)。
