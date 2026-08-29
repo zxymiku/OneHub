@@ -103,19 +103,19 @@ GET /api/accounts/:id/raw/:itemId
 
 `$select=id,name,size,lastModifiedDateTime,folder,file,content.downloadUrl` 并附加 `@microsoft.graph.downloadUrl`。token 缓存键 `token:<id>`(KV `expirationTtl=3300` 秒)。Graph 401 时强制刷新一次重试,再失败置账号 `status=invalid`。
 
-## 8. 管理台(可选,网页添加账号)
+## 8. 管理台(**仅本地开发**,网页添加账号)
 
-> **默认关闭**:仅当 Worker 设置了 `ADMIN_PASSWORD` secret 时启用;未设置时所有 `/api/admin/*` 返回 `403 {"error":{"code":"ADMIN_DISABLED"}}`。
-> 管理台与访客密码门相互独立:独立的管理密码、独立的签名 Cookie(`onehub_admin`)、独立的按 IP 限速。访客门状态不影响管理台。
-> Cookie 有效期 2 小时(短于访客门);所有端点要求有效管理 Cookie,除 `GET /api/admin/status` 与 `POST /api/admin/auth`。
+> **本地专属,线上不存在**:管理台只在 `wrangler dev` 本地开发时可用(需在 `.dev.vars` 设置 `ADMIN_MODE=local` 与 `ADMIN_PASSWORD`)。`wrangler dev` 默认仅绑定 127.0.0.1,局域网/外网均无法访问。
+> **线上部署永远不设置 `ADMIN_MODE`**,因此生产 Worker 上所有受保护的 `/api/admin/*` 端点返回通用 `404`(不暴露管理面存在);本地添加/修改的账号用 `npm run account:sync` 上传到线上 KV。
+> 本地与线上是同一套代码;开关只取决于环境变量,已 gitignore 的 `.dev.vars` 不会随部署上传。
+> Cookie 有效期 2 小时;所有端点要求有效管理 Cookie,除 `GET /api/admin/status` 与 `POST /api/admin/auth`。
 
 ```
 GET /api/admin/status
-→ 200 {"enabled":true,"unlocked":false}
-   // enabled: 是否配置了 ADMIN_PASSWORD(公开信息, 便于前端决定是否展示入口)
-   // unlocked: 当前请求是否已通过管理验证
+→ 200 {"enabled":true,"unlocked":false}    # 本地(ADMIN_MODE=local)
+→ 200 {"enabled":false,"unlocked":false}   # 线上(前端据此隐藏入口; 该响应本身无可利用信息)
 
-POST /api/admin/auth
+POST /api/admin/auth      # 仅本地可用, 线上 → 404 {"error":{"code":"NOT_FOUND",...}}
 请求 {"password":"..."}
 → 200 {"ok":true},Set-Cookie: onehub_admin=<payload>.<hmac>; HttpOnly; Secure; SameSite=Lax; Max-Age=7200
 → 401 {"error":{"code":"ADMIN_WRONG","message":"管理密码不正确"}}
@@ -167,10 +167,14 @@ POST /api/admin/accounts/personal/poll
 → 409 {"error":{"code":"AUTH_FAILED","message":"<微软拒绝原因的中文摘要>"}}
 ```
 
-### 8.4 Worker 环境绑定增补(wrangler.jsonc)
+### 8.4 Worker 环境绑定增补
 
 ```jsonc
-// secrets: ADMIN_PASSWORD(设置即启用管理台), GATE_SECRET(复用为管理 Cookie HMAC 密钥)
+// .dev.vars(仅本地开发, 已 gitignore, 绝不部署):
+//   ADMIN_MODE=local        ← 管理台总开关, 只有本地 dev 有
+//   ADMIN_PASSWORD=<管理密码>
+//   GATE_SECRET=<任意随机串>  ← 复用为管理 Cookie HMAC 密钥
+// 线上 wrangler.jsonc / secrets: 不需要 ADMIN_MODE 与 ADMIN_PASSWORD
 ```
 
 

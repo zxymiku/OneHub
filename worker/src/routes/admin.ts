@@ -33,7 +33,7 @@ adminRoutes.get("/admin/status", async (c) => {
 
 adminRoutes.post("/admin/auth", async (c) => {
   if (!adminEnabled(c.env)) {
-    return jsonError(c, 403, "ADMIN_DISABLED", "管理台未启用: 请在 Worker 上设置 ADMIN_PASSWORD");
+    return jsonError(c, 404, "NOT_FOUND", "资源不存在");
   }
   const ip = c.req.header("cf-connecting-ip") ?? "unknown";
   if (!(await adminRateLimitAllow(c.env, ip))) {
@@ -55,10 +55,11 @@ adminRoutes.delete("/admin/auth", (c) => {
   return c.json({ ok: true });
 });
 
-/** 管理保护: 以下端点全部要求有效管理 Cookie */
+/** 管理保护: 以下端点要求 ADMIN_MODE=local + 有效管理 Cookie。
+ * 线上(未设 ADMIN_MODE)统一返回通用 404, 不向外暴露"存在管理面"这一事实 */
 adminRoutes.use("/admin/*", async (c, next) => {
   if (!adminEnabled(c.env)) {
-    return jsonError(c, 403, "ADMIN_DISABLED", "管理台未启用: 请在 Worker 上设置 ADMIN_PASSWORD");
+    return jsonError(c, 404, "NOT_FOUND", "资源不存在");
   }
   if (!(await adminRequestUnlocked(c.env, c.req.raw))) {
     return jsonError(c, 401, "ADMIN_REQUIRED", "请先输入管理密码");

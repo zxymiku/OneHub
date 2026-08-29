@@ -37,8 +37,8 @@ export function AdminPage() {
   if (!status.enabled) {
     return (
       <Centered
-        title="管理台未启用"
-        note="在 Worker 上执行 npx wrangler secret put ADMIN_PASSWORD 并重新部署后, 这里即可管理账号。"
+        title="管理台仅在本地开发可用"
+        note="为避免任何公开攻击面, 账号管理不会部署到线上。请在本地运行 npm run dev:worker 后访问本页; 在本地添加的账号用 npm run account:sync 同步到线上。"
       />
     );
   }

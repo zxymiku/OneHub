@@ -104,6 +104,67 @@ export async function removeCommand(flags: Flags): Promise<void> {
   console.log(`✓ 已移除账号「${target.name}」 id=${target.id}`);
 }
 
+/**
+ * 本地 → 线上 KV 同步(本地专属管理台的配套上传)。
+ * 语义: 本地账号整体上传(同 id 覆盖); 线上已有而本地没有的账号保留不动;
+ * 最终 index = 两者并集。删除请用管理台或 account:remove --remote。
+ */
+export async function syncCommand(flags: Flags): Promise<void> {
+  const dryRun = Boolean(flags["dry-run"]);
+  const localKeys = await kvListKeys(false);
+  const accountKeys = localKeys.filter((k) => k.startsWith("account:"));
+  if (accountKeys.length === 0) {
+    throw new Error("本地 KV 中没有账号。先在本地管理台(/admin)添加, 或用 account:add(不加 --remote)");
+  }
+
+  const localRecords: AccountRecord[] = [];
+  for (const key of accountKeys) {
+    const raw = await kvGet(key, false);
+    if (!raw) continue;
+    try {
+      localRecords.push(JSON.parse(raw) as AccountRecord);
+    } catch {
+      console.warn(`⚠ 跳过损坏的本地记录: ${key}`);
+    }
+  }
+  if (localRecords.length === 0) throw new Error("本地账号记录全部无法解析, 请重新添加");
+
+  const remoteIds = await parseIndex(true);
+  const remoteOnlyIds = remoteIds.filter((id) => !localRecords.some((r) => r.id === id));
+  const localIds = localRecords.map((r) => r.id);
+
+  console.log(`本地账号 ${localRecords.length} 个:`);
+  for (const record of localRecords) {
+    console.log(`  ↑ ${JSON.stringify(maskAccount(record))}`);
+  }
+  if (remoteOnlyIds.length > 0) {
+    console.log(`线上已有而本地没有的账号 ${remoteOnlyIds.length} 个, 将保留不动(如需删除用 account:remove --remote)`);
+  }
+  if (dryRun) {
+    console.log("(--dry-run 未写入)");
+    return;
+  }
+
+  for (const record of localRecords) {
+    await kvPut(`account:${record.id}`, JSON.stringify(record), true);
+  }
+  const mergedIndex = [...new Set([...remoteOnlyIds, ...localIds])];
+  await kvPut(INDEX_KEY, JSON.stringify(mergedIndex), true);
+  console.log(`\n✓ 已同步 ${localRecords.length} 个账号到线上 KV(经 Cloudflare 认证连接加密传输)`);
+  console.log("  线上网站现在即可看到这些账号; 访客依旧无法接触任何凭据。");
+}
+
+async function parseIndex(remote: boolean): Promise<string[]> {
+  const raw = await kvGet(INDEX_KEY, remote);
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 export function printUsage(): void {
   console.log(`OneHub 账号管理 CLI
 
@@ -113,10 +174,13 @@ export function printUsage(): void {
         --client-secret <密钥Value> --upn user@tenant.onmicrosoft.com
   npm run account:list
   npm run account:remove -- --id <id>          # 或 --name <展示名>
+  npm run account:sync                         # 本地管理台账号 → 线上 KV
+  npm run account:sync -- --dry-run            # 只预览不写入
 
 选项:
   --remote    写/读线上 KV(默认写本地 wrangler dev 预览数据)
   --help      显示本帮助
 
+管理台(本地开发访问 /admin)与 CLI 管理同一份本地数据; 线上更新用 account:sync。
 Azure 应用注册步骤见 docs/setup-azure.md。`);
 }

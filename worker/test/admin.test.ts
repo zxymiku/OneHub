@@ -3,7 +3,12 @@ import app from "../src/index";
 import type { Env } from "../src/types";
 import { MockKV, installFetch, parseBody } from "./mocks";
 
-function makeEnv(opts?: { adminPassword?: string; gateSecret?: string }): {
+function makeEnv(opts?: {
+  adminPassword?: string;
+  gateSecret?: string;
+  /** 缺省时: 设了 adminPassword 即视为本地开发环境 */
+  adminMode?: string;
+}): {
   env: Env;
   accountsKv: MockKV;
   gateKv: MockKV;
@@ -14,6 +19,7 @@ function makeEnv(opts?: { adminPassword?: string; gateSecret?: string }): {
     ACCOUNTS: accountsKv as unknown as KVNamespace,
     GATE: gateKv as unknown as KVNamespace,
     ASSETS: { fetch: async () => new Response("asset") } as unknown as Fetcher,
+    ADMIN_MODE: opts?.adminMode ?? (opts?.adminPassword ? "local" : undefined),
     ADMIN_PASSWORD: opts?.adminPassword,
     GATE_SECRET: opts?.gateSecret,
   } as Env;
@@ -38,16 +44,42 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("管理台开关与登录", () => {
-  it("未设置 ADMIN_PASSWORD → status enabled:false, 受保护端点 403 ADMIN_DISABLED", async () => {
-    const { env } = makeEnv();
+describe("管理台本地专属开关", () => {
+  it("线上(设了密码但未设 ADMIN_MODE)→ 端点与登录全部通用 404, 不暴露管理面", async () => {
+    const { env } = makeEnv({ adminPassword: "admin-pass", gateSecret: "sec" });
+    // 模拟线上部署: 永远不会有 ADMIN_MODE 变量
+    delete (env as { ADMIN_MODE?: string }).ADMIN_MODE;
     const status = await app.request("/api/admin/status", undefined, env);
     expect(await status.json()).toEqual({ enabled: false, unlocked: false });
-    const res = await app.request("/api/admin/accounts", undefined, env);
-    expect(res.status).toBe(403);
-    expect((await res.json() as { error: { code: string } }).error.code).toBe("ADMIN_DISABLED");
+    for (const [method, path] of [
+      ["GET", "/api/admin/accounts"],
+      ["POST", "/api/admin/auth"],
+      ["POST", "/api/admin/accounts/business"],
+    ] as const) {
+      const res = await app.request(
+        path,
+        method === "GET" ? { method } : { method, body: "{}", headers: { "content-type": "application/json" } },
+        env,
+      );
+      expect(res.status).toBe(404);
+      expect((await res.json() as { error: { code: string } }).error.code).toBe("NOT_FOUND");
+    }
   });
 
+  it("ADMIN_MODE 不是 local → 同样禁用", async () => {
+    const { env } = makeEnv({ adminMode: "production", adminPassword: "admin-pass", gateSecret: "sec" });
+    const res = await app.request("/api/admin/accounts", undefined, env);
+    expect(res.status).toBe(404);
+  });
+
+  it("ADMIN_MODE=local 但未设密码 → 禁用", async () => {
+    const { env } = makeEnv({ adminMode: "local", gateSecret: "sec" });
+    const status = await app.request("/api/admin/status", undefined, env);
+    expect(await status.json()).toEqual({ enabled: false, unlocked: false });
+  });
+});
+
+describe("管理台开关与登录", () => {
   it("错误密码 5 次 → 第 6 次 429; 正确密码 → Cookie; 携带 Cookie 可访问", async () => {
     const { env } = makeEnv({ adminPassword: "admin-pass", gateSecret: "sec" });
     for (let i = 0; i < 5; i += 1) {

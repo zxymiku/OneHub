@@ -9,8 +9,13 @@ const COOKIE_MAX_AGE_S = 2 * 60 * 60;
 const RATELIMIT_MAX = 5;
 const RATELIMIT_WINDOW_S = 600;
 
+/**
+ * 管理台总开关: 仅当 ADMIN_MODE=local 且设置了 ADMIN_PASSWORD 时启用。
+ * ADMIN_MODE 只应出现在本地 .dev.vars(已 gitignore, 不随部署上传);
+ * 线上 Worker 没有该变量, 管理端点整体不可达(docs/api.md §8)。
+ */
 export function adminEnabled(env: Env): boolean {
-  return Boolean(env.ADMIN_PASSWORD);
+  return env.ADMIN_MODE === "local" && Boolean(env.ADMIN_PASSWORD);
 }
 
 async function hmacHex(secret: string, payload: string): Promise<string> {
