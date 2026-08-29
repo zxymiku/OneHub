@@ -1,0 +1,66 @@
+/* 密码门(PRF-7 将替换为完整 endfield maximal 构图) */
+
+.gate {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+}
+
+.panel {
+  width: min(420px, 100%);
+  background: var(--ark-panel);
+  border: 1px solid var(--ark-line);
+  box-shadow: var(--ark-depth-shadow-panel);
+  padding: clamp(22px, 4vw, 36px);
+  display: grid;
+  gap: 14px;
+}
+
+.title {
+  font-size: clamp(24px, 3.4vw, 34px);
+  line-height: 0.95;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.input {
+  font: inherit;
+  padding: 10px 12px;
+  min-height: var(--ark-tap-min);
+  border: 1px solid var(--ark-line);
+  border-radius: var(--ark-radius);
+  background: var(--ark-paper);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--ark-ink);
+  outline-offset: 0;
+}
+
+.error {
+  color: var(--ark-ink);
+  background: var(--ark-signal);
+  border: 1px solid var(--ark-ink);
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.action {
+  min-height: var(--ark-tap-min);
+  background: var(--ark-ink);
+  color: var(--ark-on-ink);
+  font-weight: 700;
+  padding: 10px 22px;
+}
+
+.action:hover:not(:disabled) {
+  color: var(--ark-signal);
+}
+
+.action:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

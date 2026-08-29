@@ -126,7 +126,7 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | PR-1 | `docs/project-scaffold` | 根文档、docs/、.github/、脚手架配置 | 本计划、AGENTS.md、README 全链路教程、API 契约、CI/PR 模板、workspaces 骨架 | 无 | **本 PR** |
 | PR-2 | `feat/worker-core` | `worker/` | Worker 全部后端:路由、Graph 客户端、双认证策略、token 缓存轮换、账号注册表、密码门端点;vitest 单测(mock Graph) | docs/api.md | 已提PR #2 |
 | PR-3 | `feat/account-cli` | `scripts/` | 账号管理 CLI:add(个人版设备码流/企业版密钥验证并解析 driveId)、list、remove,经 wrangler 写 KV | docs/api.md §KV | 已提PR #3 |
-| PR-4 | `feat/frontend-shell` | `frontend/` | Vite+React 脚手架、ark-ui endfield/maximal token 体系、应用壳(rail/dock/舞台分层)、首页账号矩阵、gate 状态检测跳转 | docs/api.md、§5 | 待认领 |
+| PR-4 | `feat/frontend-shell` | `frontend/` | Vite+React 脚手架、ark-ui endfield/maximal token 体系、应用壳(rail/dock/舞台分层)、首页账号矩阵、gate 状态检测跳转 | docs/api.md、§5 | 已提PR #4 |
 | PR-5 | `feat/browse` | `frontend/src/features/browse` | 目录浏览:面包屑、列表(排序/搜索)、加载/错误/空态、状态仪表 | PR-4 | 待认领 |
 | PR-6 | `feat/preview` | `frontend/src/features/preview` | 预览矩阵全量实现 + fileTypes 单测 + 不支持提示 + 下载按钮 | PR-5 | 待认领 |
 | PR-7 | `feat/gate` | `frontend/src/features/gate` | 密码门 UI + verify 流程 + 失败限速提示 | PR-4(worker 端点已在 PR-2) | 待认领 |

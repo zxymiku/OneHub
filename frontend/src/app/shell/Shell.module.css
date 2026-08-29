@@ -1,0 +1,215 @@
+/* 应用壳: rail(4.5rem 竖轨) + frame(顶栏/舞台/仪表 dock) */
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--ark-track-rail) 1fr;
+  min-height: 100dvh;
+}
+
+/* ---- 左侧竖轨 ---- */
+
+.rail {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  background: var(--ark-panel-dim);
+  border-right: 1px solid var(--ark-line);
+}
+
+.railMark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: var(--ark-ink);
+  color: var(--ark-on-ink);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+
+.railMark:hover {
+  background: var(--ark-ink);
+  color: var(--ark-signal);
+}
+
+.railVertical {
+  writing-mode: vertical-rl;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ark-ink-faint);
+  user-select: none;
+}
+
+.railHome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--ark-tap-min);
+  min-width: var(--ark-tap-min);
+  justify-content: center;
+}
+
+.railHomeGlyph {
+  width: 14px;
+  height: 14px;
+  background: var(--ark-signal);
+  border: 1px solid var(--ark-ink);
+  box-shadow: 2px 2px 0 var(--ark-ink);
+}
+
+.railHome:hover .railHomeGlyph {
+  background: var(--ark-ink);
+}
+
+/* ---- 右侧框架 ---- */
+
+.frame {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 20px;
+  height: 44px;
+  border-bottom: 1px solid var(--ark-line);
+  background: var(--ark-paper);
+}
+
+.topbarView {
+  color: var(--ark-ink);
+}
+
+.topbarRight {
+  display: flex;
+  gap: 8px;
+}
+
+.chipState,
+.chipWarn {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--ark-line);
+}
+
+.chipState {
+  background: var(--ark-paper);
+}
+
+.chipWarn {
+  background: var(--ark-signal);
+  color: var(--ark-ink);
+}
+
+/* ---- 舞台: 分层(网格/艺术层/内容), 分层度由深度档位控制 ---- */
+
+.stage {
+  position: relative;
+  min-width: 0;
+  padding: clamp(20px, 4vw, 48px);
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+        to right,
+        var(--ark-line-soft) 0 1px,
+        transparent 1px 56px
+      ),
+    repeating-linear-gradient(
+        to bottom,
+        var(--ark-line-soft) 0 1px,
+        transparent 1px 56px
+      ),
+    var(--ark-paper);
+  background-blend-mode: normal;
+}
+
+/* ---- 底部炭黑仪表 dock ---- */
+
+.dock {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: var(--ark-track-dock);
+  padding: 0 20px;
+  background: var(--ark-ink);
+  color: var(--ark-on-ink);
+}
+
+.dockCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ark-on-ink);
+}
+
+.dockTail {
+  margin-left: auto;
+  color: rgba(242, 242, 240, 0.55);
+}
+
+.dockDot {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+  border: 1px solid rgba(242, 242, 240, 0.55);
+}
+
+.dockDotOn {
+  background: var(--ark-state);
+  border-color: var(--ark-state);
+}
+
+.dockDotOff {
+  background: var(--ark-signal);
+  border-color: var(--ark-signal);
+}
+
+/* ---- 竖屏/窄屏重导演: rail 折为顶部横条, dock 精简 ---- */
+
+@media (max-width: 760px), (orientation: portrait) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 8px 14px;
+    border-right: none;
+    border-bottom: 1px solid var(--ark-line);
+  }
+
+  .railVertical {
+    writing-mode: horizontal-tb;
+    letter-spacing: 0.2em;
+    margin-right: auto;
+  }
+
+  .stage {
+    padding: 18px;
+  }
+
+  .dock {
+    gap: 12px;
+  }
+
+  .dockTail {
+    display: none;
+  }
+}
