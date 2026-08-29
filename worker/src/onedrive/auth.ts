@@ -77,7 +77,9 @@ async function refreshPersonalToken(
   });
   const data = (await res.json().catch(() => ({}))) as TokenEndpointResponse;
   if (!res.ok || !data.access_token) {
-    throw new AuthInvalidError(data.error_description ?? "个人版令牌刷新失败");
+    // AAD 原始 error_description 含 Trace ID 等内部信息, 不透传给用户; 完整原因记日志
+    console.error(`personal refresh failed: ${data.error ?? "unknown"} ${data.error_description ?? ""}`);
+    throw new AuthInvalidError("个人账号授权已失效, 请在服务器上重新执行 account:add 授权");
   }
   if (data.refresh_token) {
     // 读-改-写: CLI 可能在两次刷新之间覆盖过记录, 以 KV 最新值为基线
@@ -106,7 +108,8 @@ async function fetchBusinessToken(account: AccountRecord): Promise<{ accessToken
   });
   const data = (await res.json().catch(() => ({}))) as TokenEndpointResponse;
   if (!res.ok || !data.access_token) {
-    throw new AuthInvalidError(data.error_description ?? "企业版应用密钥验证失败");
+    console.error(`business token failed: ${data.error ?? "unknown"} ${data.error_description ?? ""}`);
+    throw new AuthInvalidError("企业版应用验证失败, 请检查应用密钥与管理员同意是否有效");
   }
   return { accessToken: data.access_token, expiresIn: data.expires_in ?? 3600 };
 }

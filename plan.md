@@ -130,7 +130,7 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | PR-5 | `feat/browse` | `frontend/src/features/browse` | 目录浏览:面包屑、列表(排序/搜索)、加载/错误/空态、状态仪表 | PR-4 | 已提PR #5 |
 | PR-6 | `feat/preview` | `frontend/src/features/preview` | 预览矩阵全量实现 + fileTypes 单测 + 不支持提示 + 下载按钮 | PR-5 | 已提PR #6 |
 | PR-7 | `feat/gate` | `frontend/src/features/gate` | 密码门 UI + verify 流程 + 失败限速提示 | PR-4(worker 端点已在 PR-2) | 已提PR #7 |
-| PR-8 | `chore/release` | 各处小改 | CI 完善、wrangler 部署核对、端到端走查清单(桌面+竖屏) | 全部 | 待认领 |
+| PR-8 | `chore/release` | 各处小改 | CI 完善、wrangler 部署核对、端到端走查清单(桌面+竖屏) | 全部 | 已提PR #8 |
 
 ## 八、API 契约摘要(完整版见 docs/api.md,前后端以此为准)
 

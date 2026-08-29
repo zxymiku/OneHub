@@ -16,6 +16,9 @@ dist/
 # 本地 agent 技能包(不入库)
 .skills/
 
+# 本地冒烟配置(wrangler dev 临时用, 含本地测试口令)
+worker/wrangler.dev.local.jsonc
+
 # ZCode 本地会话数据
 .zcode/
 
