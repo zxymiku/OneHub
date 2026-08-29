@@ -89,7 +89,21 @@ npm run deploy        # wrangler deploy, 输出形如 https://onehub.<你的子�
 
 - 更新版本:拉取最新代码后重复第 6 步即可(账号与配置都在 Cloudflare 侧,不受影响)。
 - **自定义域名(可选)**:Dashboard → Workers & Pages → onehub → Settings → Domains & Routes → Add Custom Domain(域名需已托管在该 Cloudflare 账号)。
-- **CI 自动部署(可选)**:在 GitHub 仓库 Settings → Secrets 添加 `CLOUDFLARE_API_TOKEN`(模板 "Edit Cloudflare Workers",权限 Workers Scripts:Edit + Account Settings:Read)与 `CLOUDFLARE_ACCOUNT_ID`,然后取消 `.github/workflows/deploy.yml` 的注释启用。默认关闭,部署以手动 `npm run deploy` 为准。
+- **CI 自动部署**:仓库已内置 `.github/workflows/deploy.yml` —— main 分支每合并一个 PR,自动构建前端并 `wrangler deploy`。启用只需在 GitHub 仓库 **Settings → Secrets and variables → Actions** 添加两个 secrets(见 §6.1);未配置时部署步骤自动跳过,不会报错。
+- **自定义域名(可选)**:Dashboard → Workers & Pages → onehub → Settings → Domains & Routes → Add Custom Domain(域名需已托管在该 Cloudflare 账号)。
+
+### 6.1 配置自动部署的 GitHub Secrets
+
+1. 生成 Cloudflare API Token:Dashboard → 右上角头像 → **My Profile → API Tokens → Create Token** → 使用模板 **"Edit Cloudflare Workers"** → Create 并复制(只显示一次);
+   - 若部署时报 KV 权限错误,编辑该 Token 追加 **Account → Workers KV Storage → Edit**;
+2. 复制 **Account ID**:Dashboard → Workers & Pages 概览页右侧栏;
+3. GitHub 仓库 → **Settings → Secrets and variables → Actions → New repository secret** 分别添加:
+   - `CLOUDFLARE_API_TOKEN` = 第 1 步的 Token
+   - `CLOUDFLARE_ACCOUNT_ID` = 第 2 步的 ID
+
+之后每次 PR 合并进 main,GitHub Actions 会自动构建 + 部署(Action 日志可见部署后的 workers.dev 地址)。也可以在 Actions 页面手动 **Run workflow** 触发。
+
+**备选方案(Cloudflare 原生 Git 集成,免 Token)**:Dashboard → Workers & Pages → onehub → **Settings → Build → Connect**(Workers Builds),绑定本仓库与 main 分支,构建命令填 `npm ci && npm run build:web`,部署命令 `npx wrangler deploy`。两种方式二选一即可,避免同时启用造成重复部署。
 
 ## 7. 验证清单
 

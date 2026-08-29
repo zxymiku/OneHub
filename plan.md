@@ -132,7 +132,9 @@ KV 命名空间绑定名:`ACCOUNTS`(账号注册表 + 凭据 + token 缓存)、`
 | PR-7 | `feat/gate` | `frontend/src/features/gate` | 密码门 UI + verify 流程 + 失败限速提示 | PR-4(worker 端点已在 PR-2) | 已提PR #7 |
 | PR-8 | `chore/release` | 各处小改 | CI 完善、wrangler 部署核对、端到端走查清单(桌面+竖屏) | 全部 | 已合并 |
 | PR-9 | `feat/admin-ui` | `worker/src/admin*`、`frontend/src/features/admin`、docs | **网页管理台**(/admin):独立管理密码(ADMIN_PASSWORD,默认关闭)、个人版设备码可视化授权、企业版表单即验即存、改名/删除;契约 docs/api.md §8 | 全部 | 已合并 |
-| PR-10 | `feat/local-admin` | worker/admin、scripts、frontend/features/admin、docs | 管理台改为**仅本地开发**(`ADMIN_MODE=local`,线上全部 404 零管理面)+ `account:sync` 本地→线上 KV 同步;契约 docs/api.md §8(已同步改) | 全部 | 本 PR |
+| PR-10 | `feat/local-admin` | worker/admin、scripts、frontend/features/admin、docs | 管理台改为**仅本地开发**(`ADMIN_MODE=local`,线上全部 404 零管理面)+ `account:sync` 本地→线上 KV 同步;契约 docs/api.md §8(已同步改) | 全部 | 已合并 |
+| PR-11 | `feat/home-minimal` | `frontend/src/features/accounts` | 首页去口号化:移除 hero 文案区,账号矩阵直达 | PR-4 | 已合并 |
+| PR-12 | `feat/auto-deploy` | `.github/workflows/deploy.yml`、docs | main 分支自动部署:GitHub Actions 构建+wrangler deploy(未配 secrets 时跳过);setup-cloudflare §6.1 教程 | 全部 | 本 PR |
 
 ## 八、API 契约摘要(完整版见 docs/api.md,前后端以此为准)
 
