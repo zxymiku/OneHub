@@ -103,7 +103,76 @@ GET /api/accounts/:id/raw/:itemId
 
 `$select=id,name,size,lastModifiedDateTime,folder,file,content.downloadUrl` 并附加 `@microsoft.graph.downloadUrl`。token 缓存键 `token:<id>`(KV `expirationTtl=3300` 秒)。Graph 401 时强制刷新一次重试,再失败置账号 `status=invalid`。
 
-## 9. Worker 环境绑定(wrangler.jsonc)
+## 8. 管理台(可选,网页添加账号)
+
+> **默认关闭**:仅当 Worker 设置了 `ADMIN_PASSWORD` secret 时启用;未设置时所有 `/api/admin/*` 返回 `403 {"error":{"code":"ADMIN_DISABLED"}}`。
+> 管理台与访客密码门相互独立:独立的管理密码、独立的签名 Cookie(`onehub_admin`)、独立的按 IP 限速。访客门状态不影响管理台。
+> Cookie 有效期 2 小时(短于访客门);所有端点要求有效管理 Cookie,除 `GET /api/admin/status` 与 `POST /api/admin/auth`。
+
+```
+GET /api/admin/status
+→ 200 {"enabled":true,"unlocked":false}
+   // enabled: 是否配置了 ADMIN_PASSWORD(公开信息, 便于前端决定是否展示入口)
+   // unlocked: 当前请求是否已通过管理验证
+
+POST /api/admin/auth
+请求 {"password":"..."}
+→ 200 {"ok":true},Set-Cookie: onehub_admin=<payload>.<hmac>; HttpOnly; Secure; SameSite=Lax; Max-Age=7200
+→ 401 {"error":{"code":"ADMIN_WRONG","message":"管理密码不正确"}}
+→ 429 {"error":{"code":"ADMIN_RATELIMITED","message":"尝试过于频繁, 请 10 分钟后再试"}}  // 5 次/10 分钟/IP, GATE KV 计数
+
+DELETE /api/admin/auth
+→ 200 {"ok":true}  // 清除管理 Cookie(登出)
+```
+
+### 8.1 账号管理
+
+```
+GET /api/admin/accounts
+→ 200 {"accounts":[{...SafeAccount, "upn": string|null, "hasSecret": boolean, "driveId": string|null, "createdAt": string}]}
+   // 脱敏: 绝不返回 clientSecret/refreshToken/clientId 原文, hasSecret 仅表示"已配置"
+
+PUT /api/admin/accounts/:id
+请求 {"name":"新展示名"}
+→ 200 {"ok":true}   // 重命名(需求 1 的展示名调整)
+
+DELETE /api/admin/accounts/:id
+→ 200 {"ok":true}   // 移除账号并清理其 token 缓存
+```
+
+### 8.2 添加企业版账号(表单直填)
+
+```
+POST /api/admin/accounts/business
+请求 {"name":"账号2","tenantId":"...","clientId":"...","clientSecret":"...","upn":"user@t.onmicrosoft.com"}
+→ 201 {"account":{...SafeAccount}}
+   // Worker 先真实验证 client_credentials 并解析 driveId, 任一步失败:
+   → 409 {"error":{"code":"VALIDATION_FAILED","message":"<中文原因>"}}   // 不写脏数据
+→ 409 {"error":{"code":"DUPLICATE_NAME","message":"已有同名账号"}}       // 同名不覆盖(网页端显式报错, 与 CLI 同名覆盖行为不同)
+```
+
+### 8.3 添加个人版账号(设备码流程可视化)
+
+```
+POST /api/admin/accounts/personal/start
+请求 {"name":"一号机","clientId":"..."}
+→ 200 {"sessionId":"<短id>","userCode":"ABC123456","verificationUri":"https://microsoft.com/devicelogin","expiresIn":900}
+   // device_code 保存在服务端 KV(pending:<sessionId>, TTL 900s), 不下发给浏览器
+
+POST /api/admin/accounts/personal/poll
+请求 {"sessionId":"..."}
+→ 200 {"status":"pending"}                       // 用户尚未在微软页面完成授权
+→ 200 {"status":"ok","account":{...SafeAccount}} // 授权完成: 换取并轮换 refresh_token, 解析 driveId, 写入 KV, 清理 pending
+→ 200 {"status":"expired"}                       // 设备码过期, 前端提示重新开始
+→ 409 {"error":{"code":"AUTH_FAILED","message":"<微软拒绝原因的中文摘要>"}}
+```
+
+### 8.4 Worker 环境绑定增补(wrangler.jsonc)
+
+```jsonc
+// secrets: ADMIN_PASSWORD(设置即启用管理台), GATE_SECRET(复用为管理 Cookie HMAC 密钥)
+```
+
 
 ```jsonc
 {

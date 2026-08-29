@@ -3,6 +3,7 @@ import { Shell } from "./shell/Shell";
 import { AccountsPage } from "../features/accounts/AccountsPage";
 import { BrowsePage } from "../features/browse/BrowsePage";
 import { GatePage } from "../features/gate/GatePage";
+import { AdminPage } from "../features/admin/AdminPage";
 import { GateProvider, useGate } from "../shared/gate/GateContext";
 
 /** 浏览页占位: 由 PR-5(feat/browse)替换为完整实现 */
@@ -23,6 +24,7 @@ function CurrentView() {
     <Routes>
       <Route path="/" element={<AccountsPage />} />
       <Route path="/a/:accountId/*" element={<BrowsePage />} />
+      <Route path="/admin" element={<AdminPage />} />
       <Route
         path="*"
         element={
